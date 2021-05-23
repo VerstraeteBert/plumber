@@ -18,7 +18,7 @@ Kubebuilder does not support go 1.16.x yet, this operator was tested and built u
 An easy way to manage go versions is [gvm](https://github.com/moovweb/gvm).
 
 ### A Kubernetes cluster
-Tested and development was done using [Kind](https://kind.sigs.k8s.io/), which is the only local cluster guaranteed to work with the operator and its dependenceis
+Testing and development was done using [Kind](https://kind.sigs.k8s.io/), which is the only local cluster guaranteed to work with the operator and its dependencies
 
 ### Setting up the testing dependencies
 The operator is bundled with [a script](./plumber-operator/hack/cluster-setup/setup-testing-env.sh) to install all required dependencies
