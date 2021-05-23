@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: zipkin
+  namespace: plumber-observability
+spec:
+  selector:
+    app: zipkin
+  type: ClusterIP
+  ports:
+    - name: zipkin-port
+      port: 9411
+      targetPort: 9411

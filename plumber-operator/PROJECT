@@ -1,0 +1,26 @@
+domain: ugent.be
+layout: go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: plumber-operator
+repo: github.com/VerstraeteBert/plumber-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: ugent.be
+  group: plumber
+  kind: TopologyPart
+  path: github.com/VerstraeteBert/plumber-operator/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: ugent.be
+  group: plumber
+  kind: Topology
+  path: github.com/VerstraeteBert/plumber-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"

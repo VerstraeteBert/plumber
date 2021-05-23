@@ -1,0 +1,7 @@
+apiVersion: plumber.ugent.be/v1alpha1
+kind: Topology
+metadata:
+  name: invalid-topo
+spec:
+  defaultScale: 5
+

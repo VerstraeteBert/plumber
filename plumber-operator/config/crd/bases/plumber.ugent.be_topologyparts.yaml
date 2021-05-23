@@ -1,0 +1,119 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: topologyparts.plumber.ugent.be
+spec:
+  group: plumber.ugent.be
+  names:
+    kind: TopologyPart
+    listKind: TopologyPartList
+    plural: topologyparts
+    singular: topologypart
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TopologyPart is the Schema for the topologies API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TopologyPartSpec defines the desired state of Topology
+            properties:
+              processors:
+                additionalProperties:
+                  properties:
+                    code:
+                      type: string
+                    env:
+                      items:
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
+                        required:
+                        - name
+                        - value
+                        type: object
+                      type: array
+                    inputFrom:
+                      type: string
+                    maxScale:
+                      default: 5
+                      maximum: 100
+                      minimum: 1
+                      type: integer
+                    sinkBindings:
+                      type: string
+                  required:
+                  - code
+                  - inputFrom
+                  - maxScale
+                  type: object
+                type: object
+              sinks:
+                additionalProperties:
+                  properties:
+                    brokers:
+                      type: string
+                    topic:
+                      type: string
+                    type:
+                      enum:
+                      - Kafka
+                      - Custom
+                      type: string
+                  required:
+                  - brokers
+                  - topic
+                  - type
+                  type: object
+                type: object
+              sources:
+                additionalProperties:
+                  properties:
+                    brokers:
+                      type: string
+                    topic:
+                      type: string
+                    type:
+                      enum:
+                      - Kafka
+                      - Custom
+                      type: string
+                  required:
+                  - brokers
+                  - topic
+                  - type
+                  type: object
+                type: object
+            type: object
+          status:
+            description: TopologyPartStatus defines the observed state of TopologyPart
+            type: object
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

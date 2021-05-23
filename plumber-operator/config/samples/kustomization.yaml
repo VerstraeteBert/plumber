@@ -1,0 +1,6 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- plumber_v1alpha1_topologypart_engineer.yaml
+- plumber_v1alpha1_topology.yaml
+- plumber_v1alpha1_topologypart_scientist.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

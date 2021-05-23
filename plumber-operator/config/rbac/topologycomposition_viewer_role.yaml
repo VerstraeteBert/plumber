@@ -1,0 +1,20 @@
+# permissions for end users to view topologycompositions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: topologycomposition-viewer-role
+rules:
+- apiGroups:
+  - plumber.ugent.be
+  resources:
+  - topologycompositions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - plumber.ugent.be
+  resources:
+  - topologycompositions/status
+  verbs:
+  - get
