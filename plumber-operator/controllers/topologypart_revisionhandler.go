@@ -63,6 +63,7 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		return reconcile.Result{}, err
 	}
 
+
 	return reconcile.Result{}, nil
 }
 
