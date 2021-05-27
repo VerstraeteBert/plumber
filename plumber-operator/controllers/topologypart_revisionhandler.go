@@ -55,9 +55,9 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		// possibly new version
 		lastRevision := revisionHistory[len(revisionHistory)-1]
 		isTopologyPartNew := isRevisionEqual(newRevision, lastRevision)
-		rh.Log.Info("Equal! on bytes %b", isTopologyPartNew)
+		rh.Log.Info(fmt.Sprintf("Equal! on bytes %t", isTopologyPartNew))
 		isTopologyPartNew2 := isRevisionEqual2(newRevision, lastRevision)
-		rh.Log.Info("equal! on semantic %b", isTopologyPartNew2)
+		rh.Log.Info(fmt.Sprintf("equal! on semantic %t", isTopologyPartNew2))
 	}
 	_ = ctrl.SetControllerReference(rh.topologyPart, newRevision, rh.scheme)
 	applyOpts := []client.PatchOption{client.FieldOwner("topologypart-controller"), client.ForceOwnership}
