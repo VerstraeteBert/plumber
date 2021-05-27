@@ -264,7 +264,6 @@ func (r *TopologyReconciler) updateStateSuccess(topology *plumberv1alpha1.Topolo
 		}
 	}
 
-
 	if shouldRequeue {
 		return fmt.Errorf("something went wrong while updating state")
 	}

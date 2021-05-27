@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -12,23 +14,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	appsv1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sort"
 	"strconv"
 )
 
 type RevisionHandler struct {
-	cClient client.Client
-	Log    logr.Logger
+	cClient      client.Client
+	Log          logr.Logger
 	topologyPart *plumberv1alpha1.TopologyPart
-	scheme 	*runtime.Scheme
+	scheme       *runtime.Scheme
 }
 
 const (
 	ControllerRevisionManagedByLabel string = "plumber.ugent.be/managed-by"
-	ContollerRevisionNumber = "plumber.ugent.be/revision-number"
+	ContollerRevisionNumber                 = "plumber.ugent.be/revision-number"
 )
 
 func (rh *RevisionHandler) handle() (reconcile.Result, error) {
@@ -44,17 +44,16 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 	// create new in-mem revision based on the given topologypart
 	newRevision, err := createNewRevision(rh.topologyPart, getNextRevisionNumber(revisionHistory))
 	if err != nil {
-		rh.Log.Error(err,"failed to create new revision in-memory")
+		rh.Log.Error(err, "failed to create new revision in-memory")
 		return reconcile.Result{}, err
 	}
-
 
 	if len(revisionHistory) == 0 {
 		// first revision
 		// push it immediately
 	} else {
 		// possibly new version
-		lastRevision := revisionHistory[len(revisionHistory) - 1]
+		lastRevision := revisionHistory[len(revisionHistory)-1]
 		isTopologyPartNew := isRevisionEqual(newRevision, lastRevision)
 		rh.Log.Info("Equal! on bytes %b", isTopologyPartNew)
 		isTopologyPartNew2 := isRevisionEqual2(newRevision, lastRevision)
@@ -99,14 +98,14 @@ func createNewRevision(topologyPart *plumberv1alpha1.TopologyPart, revisionNum i
 			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: topologyPart.Name + "-revision-" + strconv.FormatInt(revisionNum, 10),
+			Name:      topologyPart.Name + "-revision-" + strconv.FormatInt(revisionNum, 10),
 			Namespace: topologyPart.Namespace,
 			Labels: map[string]string{
 				ControllerRevisionManagedByLabel: topologyPart.Name,
-				ContollerRevisionNumber: strconv.FormatInt(revisionNum, 10),
+				ContollerRevisionNumber:          strconv.FormatInt(revisionNum, 10),
 			},
 		},
-		Data: runtime.RawExtension{Raw: str.Bytes()},
+		Data:     runtime.RawExtension{Raw: str.Bytes()},
 		Revision: revisionNum,
 	}, nil
 }

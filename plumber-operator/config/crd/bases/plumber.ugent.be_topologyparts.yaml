@@ -107,6 +107,11 @@ spec:
             type: object
           status:
             description: TopologyPartStatus defines the observed state of TopologyPart
+            properties:
+              latestRevision:
+                type: integer
+            required:
+            - latestRevision
             type: object
         type: object
     served: true
