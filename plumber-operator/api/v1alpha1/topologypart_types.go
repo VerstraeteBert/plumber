@@ -64,7 +64,7 @@ type EnvVar struct {
 
 // TopologyPartStatus defines the observed state of TopologyPart
 type TopologyPartStatus struct {
-	// Does not have a status
+	LatestRevision int `json:"latestRevision"`
 }
 
 // +kubebuilder:object:root=true
