@@ -3,7 +3,9 @@ package controllers
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -46,15 +48,18 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		return reconcile.Result{}, err
 	}
 
-	// get the last one
-	//if len(revisionHistory) == 0 {
-	//	// first revision
-	//	// push it immediately
-	//} else {
-	//	// possibly new version
-	//	lastRevision := revisionHistory[len(revisionHistory) - 1]
-	//	isTopologyPartNew := compareRevisions()
-	//}
+
+	if len(revisionHistory) == 0 {
+		// first revision
+		// push it immediately
+	} else {
+		// possibly new version
+		lastRevision := revisionHistory[len(revisionHistory) - 1]
+		isTopologyPartNew := isRevisionEqual(newRevision, lastRevision)
+		rh.Log.Info("Equal! on bytes %b", isTopologyPartNew)
+		isTopologyPartNew2 := isRevisionEqual2(newRevision, lastRevision)
+		rh.Log.Info("equal! on semantic %b", isTopologyPartNew2)
+	}
 	_ = ctrl.SetControllerReference(rh.topologyPart, newRevision, rh.scheme)
 	applyOpts := []client.PatchOption{client.FieldOwner("topologypart-controller"), client.ForceOwnership}
 	err = rh.cClient.Patch(context.TODO(), newRevision, client.Apply, applyOpts...)
@@ -63,7 +68,15 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		return reconcile.Result{}, err
 	}
 
-	return reconcile.Result{}, nil
+	return reconcile.Result{}, fmt.Errorf("test")
+}
+
+func isRevisionEqual(lhs *appsv1.ControllerRevision, rhs *appsv1.ControllerRevision) bool {
+	return bytes.Equal(lhs.Data.Raw, rhs.Data.Raw)
+}
+
+func isRevisionEqual2(lhs *appsv1.ControllerRevision, rhs *appsv1.ControllerRevision) bool {
+	return equality.Semantic.DeepEqual(lhs.Data.Object, rhs.Data.Object)
 }
 
 func getNextRevisionNumber(revisions []*appsv1.ControllerRevision) int64 {
