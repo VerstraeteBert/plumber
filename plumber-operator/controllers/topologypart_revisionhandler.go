@@ -63,7 +63,6 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		return reconcile.Result{}, err
 	}
 
-
 	return reconcile.Result{}, nil
 }
 
@@ -82,6 +81,10 @@ func createNewRevision(topologyPart *plumberv1alpha1.TopologyPart, revisionNum i
 		return nil, err
 	}
 	return &appsv1.ControllerRevision{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ControllerRevision",
+			APIVersion: appsv1.SchemeGroupVersion.String(),
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: topologyPart.Name + "-revision-" + strconv.FormatInt(revisionNum, 10),
 			Namespace: topologyPart.Namespace,
