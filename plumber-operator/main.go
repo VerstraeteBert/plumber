@@ -18,8 +18,9 @@ package main
 
 import (
 	"flag"
-	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"os"
+
+	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -93,6 +94,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.TopologyPartReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("TopologyPart"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "TopologyPart")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")

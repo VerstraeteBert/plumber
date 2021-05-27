@@ -9,6 +9,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
+  controller: true
   domain: ugent.be
   group: plumber
   kind: TopologyPart
