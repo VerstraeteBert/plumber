@@ -5,11 +5,11 @@ import (
 	"github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 
+	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 )
 
 // TopologyPartReconciler reconciles a TopologyPart object
@@ -37,10 +37,10 @@ func (r *TopologyPartReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	rvh := RevisionHandler{
-		cClient: r.Client,
+		cClient:      r.Client,
 		topologyPart: &crdPart,
-		scheme: r.Scheme,
-		Log: logger,
+		scheme:       r.Scheme,
+		Log:          logger,
 	}
 	return rvh.handle()
 }
