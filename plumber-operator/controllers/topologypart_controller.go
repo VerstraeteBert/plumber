@@ -23,20 +23,26 @@ type TopologyPartReconciler struct {
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topologyparts/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topologyparts/finalizers,verbs=update
 func (r *TopologyPartReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = r.Log.WithValues("topologypart", req.NamespacedName)
+	logger := r.Log.WithValues("topologypart", req.NamespacedName)
 
 	var crdPart plumberv1alpha1.TopologyPart
 	if err := r.Get(ctx, req.NamespacedName, &crdPart); err != nil {
 		if errors.IsNotFound(err) {
-			r.Log.Info("TopologyPart object not found. Ignoring since object must be deleted.")
+			logger.Info("TopologyPart object not found. Ignoring since object must be deleted.")
 			return ctrl.Result{}, nil
 		}
 		// requeue on any other error
-		r.Log.Error(err, "Failed to get TopologyPart Object %s", req.String())
+		logger.Error(err, "Failed to get TopologyPart Object %s", req.String())
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	rvh := RevisionHandler{
+		cClient: r.Client,
+		topologyPart: &crdPart,
+		scheme: r.Scheme,
+		Log: logger,
+	}
+	return rvh.handle()
 }
 
 // SetupWithManager sets up the controller with the Manager.
