@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -52,12 +53,20 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		// first revision
 		// push it immediately
 	} else {
-		// possibly new version
-		lastRevision := revisionHistory[len(revisionHistory)-1]
-		isTopologyPartNew := isRevisionEqual(newRevision, lastRevision)
-		rh.Log.Info(fmt.Sprintf("Equal! on bytes %t", isTopologyPartNew))
-		isTopologyPartNew2 := isRevisionEqual2(newRevision, lastRevision)
-		rh.Log.Info(fmt.Sprintf("equal! on semantic %t", isTopologyPartNew2))
+		// an older revision exists, check for equality of desired spec with last created revision
+		prevRevision := revisionHistory[len(revisionHistory)-1]
+		var prevTopologyPart plumberv1alpha1.TopologyPart
+		_, sch, err := unstructured.UnstructuredJSONScheme.Decode(prevRevision.Data.Raw, &schema.GroupVersionKind{
+			Group:   "plumber.ugent.be",
+			Version: "v1alpha1",
+			Kind:    "TopologyPart",
+		}, &prevTopologyPart)
+		if err != nil {
+			rh.Log.Error(err, "failed to decode last revision")
+			return reconcile.Result{}, err
+		}
+		rh.Log.Info(prevTopologyPart.Name)
+		rh.Log.Info(sch.Kind)
 	}
 	_ = ctrl.SetControllerReference(rh.topologyPart, newRevision, rh.scheme)
 	applyOpts := []client.PatchOption{client.FieldOwner("topologypart-controller"), client.ForceOwnership}
@@ -71,10 +80,6 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 }
 
 func isRevisionEqual(lhs *appsv1.ControllerRevision, rhs *appsv1.ControllerRevision) bool {
-	return bytes.Equal(lhs.Data.Raw, rhs.Data.Raw)
-}
-
-func isRevisionEqual2(lhs *appsv1.ControllerRevision, rhs *appsv1.ControllerRevision) bool {
 	return equality.Semantic.DeepEqual(lhs.Data.Object, rhs.Data.Object)
 }
 
