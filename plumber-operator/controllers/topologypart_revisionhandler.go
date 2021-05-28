@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -43,44 +42,66 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 	sort.Stable(byRevision(revisionHistory))
 
 	// create new in-mem revision based on the given topologypart
-	newRevision, err := createNewRevision(rh.topologyPart, getNextRevisionNumber(revisionHistory))
+	updatedRevisionNumber := getNextRevisionNumber(revisionHistory)
+	newRevision, err := createNewRevision(rh.topologyPart, updatedRevisionNumber)
 	if err != nil {
 		rh.Log.Error(err, "failed to create new revision in-memory")
 		return reconcile.Result{}, err
 	}
 
 	if len(revisionHistory) == 0 {
-		// first revision
-		// push it immediately
+		err := rh.persistNewRevision(newRevision)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
 	} else {
 		// an older revision exists, check for equality of desired spec with last created revision
 		prevRevision := revisionHistory[len(revisionHistory)-1]
 		var prevTopologyPart plumberv1alpha1.TopologyPart
-		_, sch, err := unstructured.UnstructuredJSONScheme.Decode(prevRevision.Data.Raw, &schema.GroupVersionKind{
+		// FIXME what I'm doing here is quite dangerous; I'm assuming that the porvided object struct will be correctly populated
+		_, _, err := unstructured.UnstructuredJSONScheme.Decode(prevRevision.Data.Raw, &schema.GroupVersionKind{
 			Group:   "plumber.ugent.be",
 			Version: "v1alpha1",
 			Kind:    "TopologyPart",
 		}, &prevTopologyPart)
 		if err != nil {
 			rh.Log.Error(err, "failed to decode last revision")
+			// FIXME this should be handled in a different manner, should just make a new revision, since the last one is corrupt
 			return reconcile.Result{}, err
 		}
-		rh.Log.Info(prevTopologyPart.Name)
-		rh.Log.Info(sch.Kind)
-	}
-	_ = ctrl.SetControllerReference(rh.topologyPart, newRevision, rh.scheme)
-	applyOpts := []client.PatchOption{client.FieldOwner("topologypart-controller"), client.ForceOwnership}
-	err = rh.cClient.Patch(context.TODO(), newRevision, client.Apply, applyOpts...)
-	if err != nil {
-		rh.Log.Error(err, "failed to patch new revision")
-		return reconcile.Result{}, err
+
+		if equality.Semantic.DeepEqual(rh.topologyPart.Spec, prevTopologyPart.Spec) {
+			updatedRevisionNumber = prevRevision.Revision
+		} else {
+			err = rh.persistNewRevision(newRevision)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+		}
 	}
 
-	return reconcile.Result{}, fmt.Errorf("test")
+	// update status with newest revision number, if it needs to be updated
+	if updatedRevisionNumber != rh.topologyPart.Status.LatestRevision {
+		rh.topologyPart.Status.LatestRevision = updatedRevisionNumber
+		err := rh.cClient.Status().Update(context.TODO(), rh.topologyPart)
+		if err != nil {
+			rh.Log.Error(err, "failed to update status")
+			return reconcile.Result{}, err
+		}
+	}
+
+	return reconcile.Result{}, nil
 }
 
-func isRevisionEqual(lhs *appsv1.ControllerRevision, rhs *appsv1.ControllerRevision) bool {
-	return equality.Semantic.DeepEqual(lhs.Data.Object, rhs.Data.Object)
+func (rh *RevisionHandler) persistNewRevision(rev *appsv1.ControllerRevision) error {
+	_ = ctrl.SetControllerReference(rh.topologyPart, rev, rh.scheme)
+	applyOpts := []client.PatchOption{client.FieldOwner("topologypart-controller"), client.ForceOwnership}
+	err := rh.cClient.Patch(context.TODO(), rev, client.Apply, applyOpts...)
+	if err != nil {
+		rh.Log.Error(err, "failed to patch new revision")
+		return err
+	}
+	return nil
 }
 
 func getNextRevisionNumber(revisions []*appsv1.ControllerRevision) int64 {
