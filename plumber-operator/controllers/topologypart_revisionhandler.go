@@ -17,7 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sort"
 	"strconv"
-	"github.com/davecgh/go-spew/spew"
 )
 
 type RevisionHandler struct {
@@ -84,10 +83,13 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 	// update status with newest revision number, if it needs to be updated
 	rh.Log.Info("got here!")
 	if updatedRevisionNumber != rh.topologyPart.Status.LatestRevision {
-		rh.topologyPart.Status.LatestRevision = updatedRevisionNumber
+		var newStat plumberv1alpha1.TopologyPartStatus
+		rh.topologyPart.Status.DeepCopyInto(&newStat)
+		newStat.LatestRevision = updatedRevisionNumber
+		rh.topologyPart.Status = newStat
+		//rh.topologyPart.Status.LatestRevision = updatedRevisionNumber
 		err := rh.cClient.Status().Update(context.TODO(), rh.topologyPart)
 		if err != nil {
-			spew.Dump(rh.topologyPart)
 			rh.Log.Error(err, "failed to update status")
 			return reconcile.Result{}, err
 		}
