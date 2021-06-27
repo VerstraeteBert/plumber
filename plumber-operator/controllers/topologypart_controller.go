@@ -32,7 +32,7 @@ func (r *TopologyPartReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			return ctrl.Result{}, nil
 		}
 		// requeue on any other error
-		logger.Error(err, "Failed to get TopologyPart Object %s", req.String())
+		logger.Error(err, "Failed to get TopologyPart %s", req.String())
 		return ctrl.Result{}, err
 	}
 
