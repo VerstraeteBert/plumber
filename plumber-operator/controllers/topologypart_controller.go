@@ -39,7 +39,7 @@ func (r *TopologyPartReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	rvh := RevisionHandler{
 		cClient: r.Client,
 		// deepcopy because the status is changed later on
-		topologyPart: crdPart.DeepCopy(),
+		topologyPart: &crdPart,
 		scheme:       r.Scheme,
 		Log:          logger,
 	}
