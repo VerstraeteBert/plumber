@@ -17,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sort"
 	"strconv"
+	"github.com/davecgh/go-spew/spew"
 )
 
 type RevisionHandler struct {
@@ -58,7 +59,7 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		// an older revision exists, check for equality of desired spec with last created revision
 		prevRevision := revisionHistory[len(revisionHistory)-1]
 		var prevTopologyPart plumberv1alpha1.TopologyPart
-		// FIXME what I'm doing here is quite dangerous; I'm assuming that the porvided object struct will be correctly populated
+		// FIXME what I'm doing here is quite dangerous; I'm assuming that the provided object struct will be correctly populated
 		_, _, err := unstructured.UnstructuredJSONScheme.Decode(prevRevision.Data.Raw, &schema.GroupVersionKind{
 			Group:   "plumber.ugent.be",
 			Version: "v1alpha1",
@@ -81,14 +82,17 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 	}
 
 	// update status with newest revision number, if it needs to be updated
+	rh.Log.Info("got here!")
 	if updatedRevisionNumber != rh.topologyPart.Status.LatestRevision {
 		rh.topologyPart.Status.LatestRevision = updatedRevisionNumber
 		err := rh.cClient.Status().Update(context.TODO(), rh.topologyPart)
 		if err != nil {
+			spew.Dump(rh.topologyPart)
 			rh.Log.Error(err, "failed to update status")
 			return reconcile.Result{}, err
 		}
 	}
+	rh.Log.Info("made it, phew!")
 
 	return reconcile.Result{}, nil
 }
