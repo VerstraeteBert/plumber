@@ -81,20 +81,15 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 	}
 
 	// update status with newest revision number, if it needs to be updated
-	rh.Log.Info("got here!")
 	if updatedRevisionNumber != rh.topologyPart.Status.LatestRevision {
-		var newStat plumberv1alpha1.TopologyPartStatus
-		rh.topologyPart.Status.DeepCopyInto(&newStat)
-		newStat.LatestRevision = updatedRevisionNumber
-		rh.topologyPart.Status = newStat
+		// FIXME not found error on topology, unsure why
 		//rh.topologyPart.Status.LatestRevision = updatedRevisionNumber
-		err := rh.cClient.Status().Update(context.TODO(), rh.topologyPart)
-		if err != nil {
-			rh.Log.Error(err, "failed to update status")
-			return reconcile.Result{}, err
-		}
+		//err := rh.cClient.Status().Update(context.TODO(), rh.topologyPart)
+		//if err != nil {
+		//	rh.Log.Error(err, "failed to update status")
+		//	return reconcile.Result{}, err
+		//}
 	}
-	rh.Log.Info("made it, phew!")
 
 	return reconcile.Result{}, nil
 }
