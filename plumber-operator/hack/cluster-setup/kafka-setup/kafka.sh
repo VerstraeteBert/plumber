@@ -13,10 +13,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 kubectl create namespace plumber-kafka
 
-kubectl create -f 'https://strimzi.io/install/latest?namespace=plumber-kafka' -n plumber-kafka
+kubectl create -f "$DIR/strimzi-cluster-operator-0.22.1.yaml" -n plumber-kafka
 
 kubectl wait --for=condition=Established --all crd
+# Hack to work around "error no matching resources found" issue
+sleep 1
 kubectl wait pod --timeout=-1s --for=condition=Ready -l '!job-name' -n plumber-kafka
 
-kubectl apply -f $DIR/kafka-single-ephemeral.yaml
+kubectl apply -f "$DIR/kafka-single-ephemeral.yaml"
 kubectl wait pod --timeout=-1s --for=condition=Ready -l '!job-name' -n plumber-kafka

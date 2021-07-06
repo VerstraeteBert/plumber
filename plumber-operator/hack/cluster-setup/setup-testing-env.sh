@@ -13,7 +13,7 @@ set -eo pipefail
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 echo "Setting up Kafka"
-source $DIR/kafka-setup/kafka.sh
+source "$DIR/kafka-setup/kafka.sh"
 
 #DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 #echo "Setting up observability components"
@@ -21,10 +21,10 @@ source $DIR/kafka-setup/kafka.sh
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 echo "Setting up necessary topics for ingress / egress"
-source $DIR/test-topics/topics.sh
+source "$DIR/test-topics/topics.sh"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 echo "Setting up keda"
-source $DIR/keda-setup/keda.sh
+source "$DIR/keda-setup/keda.sh"
 
 echo "Done"

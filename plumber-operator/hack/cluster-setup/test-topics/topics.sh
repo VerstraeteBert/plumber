@@ -10,12 +10,12 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-kubectl apply -f $DIR/kafka-ingress-0.yaml
-kubectl apply -f $DIR/kafka-ingress-1.yaml
+kubectl apply -f "$DIR/kafka-ingress-0.yaml"
+kubectl apply -f "$DIR/kafka-ingress-1.yaml"
 
-kubectl apply -f $DIR/kafka-egress-0.yaml
-kubectl apply -f $DIR/kafka-egress-1.yaml
-kubectl apply -f $DIR/kafka-egress-2.yaml
-kubectl apply -f $DIR/kafka-egress-3.yaml
+kubectl apply -f "$DIR/kafka-egress-0.yaml"
+kubectl apply -f "$DIR/kafka-egress-1.yaml"
+kubectl apply -f "$DIR/kafka-egress-2.yaml"
+kubectl apply -f "$DIR/kafka-egress-3.yaml"
 
 
