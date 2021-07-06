@@ -18,5 +18,5 @@ kubectl create -f 'https://strimzi.io/install/latest?namespace=plumber-kafka' -n
 kubectl wait --for=condition=Established --all crd
 kubectl wait pod --timeout=-1s --for=condition=Ready -l '!job-name' -n plumber-kafka
 
-kubectl apply -f $DIR/kafka-single-ephemeral.yaml
+kubectl apply -f "$DIR/kafka-single-ephemeral.yaml"
 kubectl wait pod --timeout=-1s --for=condition=Ready -l '!job-name' -n plumber-kafka

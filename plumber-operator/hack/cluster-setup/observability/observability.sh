@@ -12,9 +12,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 kubectl create namespace plumber-observability
 
-kubectl apply -f $DIR/zipkin-deployment.yaml
-kubectl apply -f $DIR/zipkin-service.yaml
+kubectl apply -f "$DIR/zipkin-deployment.yaml"
+kubectl apply -f "$DIR/zipkin-service.yaml"
 kubectl wait pod --timeout=-1s --for=condition=Ready -l '!job-name' -n plumber-observability
 
-kubectl apply -f $DIR/tracing-eventing.yaml
-kubectl apply -f $DIR/tracing-serving.yaml
+kubectl apply -f "$DIR/tracing-eventing.yaml"
+kubectl apply -f "$DIR/tracing-serving.yaml"
