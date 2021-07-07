@@ -77,7 +77,6 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err := r.Get(ctx, req.NamespacedName, &crdComp); err != nil {
 		if errors.IsNotFound(err) {
 			r.Log.Info("Topology object not found. Ignoring since object must be deleted.")
-			r.Log.Info(fmt.Sprintf("Topology object with keys: %s: %s", req.Name, req.Namespace))
 			return ctrl.Result{}, nil
 		}
 		// requeue on any other error
@@ -88,11 +87,6 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	topoParts := plumberv1alpha1.TopologyPartList{}
 	for _, partRef := range crdComp.Spec.Parts {
 		topoRevision := appsv1.ControllerRevision{}
-		nsn := types.NamespacedName{
-			Name:      partRef.Name + "-revision-" + strconv.FormatInt(partRef.Revision, 10),
-			Namespace: crdComp.Namespace,
-		}
-		r.Log.Info(fmt.Sprintf("attempting to fetch %s", nsn.String()))
 		err := r.Client.Get(ctx,
 			types.NamespacedName{
 				Name:      partRef.Name + "-revision-" + strconv.FormatInt(partRef.Revision, 10),
