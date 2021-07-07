@@ -21,8 +21,8 @@ import (
 )
 
 type TopologyPartReference struct {
-	Name string `json:"name"`
-	Revision int64 `json:"revision"`
+	Name     string `json:"name"`
+	Revision int64  `json:"revision"`
 }
 
 // TopologySpec defines the desired state of the Topology
