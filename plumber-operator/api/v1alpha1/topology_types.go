@@ -20,12 +20,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type TopologyPartReference struct {
+	Name string `json:"name"`
+	Revision int64 `json:"revision"`
+}
+
 // TopologySpec defines the desired state of the Topology
 type TopologySpec struct {
+	// +optional
+	Parts []TopologyPartReference `json:"parts,omitempty"`
 	// DefaultScale corresponds to the default maximum amount of replicas a processor can have
 	// This field is used to determine the number of partitions any of the input topics of the processors must have.
 	// The value can be overwritten on each individual processor, if multiple processors consume from a topic, the highest value is picked.
-	// It has a minimum value of 1, a maximul value of 100 and a default value of 5
+	// It has a minimum value of 1, a maximum value of 100 and a default value of 5
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
