@@ -43,11 +43,24 @@ spec:
                   the number of partitions any of the input topics of the processors
                   must have. The value can be overwritten on each individual processor,
                   if multiple processors consume from a topic, the highest value is
-                  picked. It has a minimum value of 1, a maximul value of 100 and
+                  picked. It has a minimum value of 1, a maximum value of 100 and
                   a default value of 5
                 maximum: 100
                 minimum: 1
                 type: integer
+              parts:
+                items:
+                  properties:
+                    name:
+                      type: string
+                    revision:
+                      format: int64
+                      type: integer
+                  required:
+                  - name
+                  - revision
+                  type: object
+                type: array
             type: object
           status:
             description: TopologyStatus defines the observed state of Topology
