@@ -89,13 +89,13 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	for _, partRef := range crdComp.Spec.Parts {
 		topoRevision := appsv1.ControllerRevision{}
 		nsn := types.NamespacedName{
-			Name:      partRef.Name + "-" + strconv.FormatInt(partRef.Revision, 10),
+			Name:      partRef.Name + "-revision-" + strconv.FormatInt(partRef.Revision, 10),
 			Namespace: crdComp.Namespace,
 		}
 		r.Log.Info(fmt.Sprintf("attempting to fetch %s", nsn.String()))
 		err := r.Client.Get(ctx,
 			types.NamespacedName{
-				Name:      partRef.Name + "-" + strconv.FormatInt(partRef.Revision, 10),
+				Name:      partRef.Name + "-revision-" + strconv.FormatInt(partRef.Revision, 10),
 				Namespace: crdComp.Namespace,
 			},
 			&topoRevision,
