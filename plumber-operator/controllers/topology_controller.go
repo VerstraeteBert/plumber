@@ -35,6 +35,7 @@ func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	topoMapFn := func(obj client.Object) []reconcile.Request {
 		ns := obj.GetNamespace()
 		return []reconcile.Request{
+			// FIXME, shouldn't lock the name of the composition object
 			{NamespacedName: types.NamespacedName{
 				Namespace: ns,
 				Name:      domain.CompositionKubeName,
