@@ -6,14 +6,14 @@ spec:
   processors:
     transformer-0:
       inputFrom: kafka-ingress
-      code: "image;verstraetebert/plumber-greeter:v0.0.1"
+      code: "verstraetebert/plumber-greeter:v0.0.1"
       env:
         - name: MSG
           value: "Hello from transformer-0!"
       maxScale: 8
     transformer-1:
       inputFrom: transformer-0
-      code: "image;verstraetebert/plumber-greeter:v0.0.1"
+      code: "verstraetebert/plumber-greeter:v0.0.1"
       env:
         - name: MSG
           value: "Hello from transformer-1!"

@@ -46,7 +46,7 @@ type Sink struct {
 
 type Processor struct {
 	InputFrom string `json:"inputFrom"`
-	Code      string `json:"code"`
+	Image     string `json:"image"`
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100

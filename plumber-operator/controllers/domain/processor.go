@@ -61,7 +61,7 @@ func convertProcessorFromCRD(processorName string, processor v1alpha1.Processor,
 		InputComponentName:    processor.InputFrom,
 		OutputComponentNames:  strings.Split(processor.SinkBindings, ";"), // inter-processor connections not yet taken into account
 		OutputKafkaReferences: make(map[string]KafkaReference),
-		Image:                 strings.Split(processor.Code, ";")[1],
+		Image:                 processor.Image,
 		EnvVars:               util.ConvertEnvVars(processor.Env),
 		MaxReplicas:           util.MaxInt(defaultMaxReplicas, processor.MaxScale),
 	}
