@@ -76,7 +76,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 				}
 				if !readyForPhaseOut {
 					u.Log.Info("syncer has not yet completed phasing out preparation, requeuing")
-					return reconcile.Result {
+					return reconcile.Result{
 						RequeueAfter: time.Second * 10,
 					}, nil
 				}
@@ -217,7 +217,6 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			return reconcile.Result{}, nil
 		}
 	}
-	return reconcile.Result{}, nil
 }
 
 // checkActiveRevisionReadyForPhaseOut checks if a revision is ready for phasing out

@@ -1,11 +1,11 @@
-package controllers
+package syncer
 
 import (
 	"context"
 	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers/domain"
-	"github.com/VerstraeteBert/plumber-operator/controllers/util"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer/domain"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -177,7 +177,7 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 			continue
 		}
 		for _, cond := range *ps {
-			if util.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
+			if shared.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
 				numActual++
 			}
 		}
@@ -188,7 +188,7 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 			continue
 		}
 		for _, cond := range *sis {
-			if util.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
+			if shared.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
 				numActual++
 			}
 		}
@@ -199,7 +199,7 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 			continue
 		}
 		for _, cond := range *sos {
-			if util.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
+			if shared.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
 				numActual++
 			}
 		}
@@ -238,7 +238,7 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 // 		-> this logic should possibly live in the actual object generation loop, where for each object, based on observations, actions are taken on the status & object itself
 // https://github.com/kubernetes/apimachinery/blob/master/pkg/api/meta/conditions.go
 func (r *TopologyReconciler) updateStateSuccess(topology *plumberv1alpha1.Topology, domainTopo *domain.Topology) error {
-	defer util.Elapsed(r.Log, "Updating state")()
+	defer shared.Elapsed(r.Log, "Updating state")()
 
 	var newStat plumberv1alpha1.TopologyStatus
 	topology.Status.DeepCopyInto(&newStat)

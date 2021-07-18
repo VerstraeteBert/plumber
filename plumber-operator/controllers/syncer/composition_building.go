@@ -1,11 +1,11 @@
-package controllers
+package syncer
 
 import (
 	"context"
 	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers/domain"
-	"github.com/VerstraeteBert/plumber-operator/controllers/util"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer/domain"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
@@ -16,7 +16,7 @@ const (
 )
 
 func (r *TopologyReconciler) buildDomainTopo(crdComp *plumberv1alpha1.Topology, topoParts *plumberv1alpha1.TopologyPartList) (*domain.Topology, bool, error) {
-	defer util.Elapsed(r.Log, "Building topo")()
+	defer shared.Elapsed(r.Log, "Building topo")()
 	projName := strings.Split(crdComp.Namespace, "plumber-")[1]
 	defaultMaxScalePtr := crdComp.Spec.DefaultScale
 	var defaultMaxScale int
@@ -48,9 +48,9 @@ func (r *TopologyReconciler) handleSemanticValidationErrors(topo *plumberv1alpha
 		Type:    StatusReady,
 		Status:  metav1.ConditionFalse,
 		Reason:  "SemanticValidationError",
-		Message: util.ErrorsToString(errorList),
+		Message: shared.ErrorsToString(errorList),
 	}
-	if !util.IsStatusConditionPresentAndFullyEqual(topo.Status.Status, newGlobalStat) {
+	if !shared.IsStatusConditionPresentAndFullyEqual(topo.Status.Status, newGlobalStat) {
 		changed = true
 		meta.SetStatusCondition(&newStatus.Status, newGlobalStat)
 		// clearing all other statuses, if global status is already semantic error, all of them will already be empty maps
@@ -69,7 +69,7 @@ func (r *TopologyReconciler) handleSemanticValidationErrors(topo *plumberv1alpha
 		}
 	}
 
-	err := r.cleanup(topo.Namespace, util.NewSet())
+	err := r.cleanup(topo.Namespace, shared.NewSet())
 	if err != nil {
 		r.Log.Error(err, fmt.Sprintf("Failed to tear running components down"))
 		return err

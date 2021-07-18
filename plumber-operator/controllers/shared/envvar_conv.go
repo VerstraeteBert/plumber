@@ -1,4 +1,4 @@
-package util
+package shared
 
 import (
 	"github.com/VerstraeteBert/plumber-operator/api/v1alpha1"

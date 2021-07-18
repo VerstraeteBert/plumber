@@ -1,11 +1,11 @@
-package controllers
+package syncer
 
 import (
 	"context"
 	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers/domain"
-	"github.com/VerstraeteBert/plumber-operator/controllers/util"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer/domain"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -19,7 +19,7 @@ func (r *TopologyReconciler) reconcileProcessors(crdTopo *plumberv1alpha1.Topolo
 	// 2. Deployment with sidecar
 	// 3. ScaledObject
 	// Mark this controller as field owner on server side applies
-	defer util.Elapsed(r.Log, "Patching topo components")()
+	defer shared.Elapsed(r.Log, "Patching topo components")()
 
 	applyOpts := []client.PatchOption{client.FieldOwner("topology-controller"), client.ForceOwnership}
 	for _, processor := range domainTopo.Processors {

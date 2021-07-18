@@ -1,7 +1,7 @@
-package controllers
+package syncer
 
 import (
-	"github.com/VerstraeteBert/plumber-operator/controllers/domain"
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer/domain"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"

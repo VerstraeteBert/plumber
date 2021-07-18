@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer"
+	"github.com/VerstraeteBert/plumber-operator/controllers/topologypart_revisions"
 	"os"
 
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
@@ -34,7 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
@@ -69,8 +70,6 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	// TODO exclude system namespaces, and plumber namespaces through the use of predicates
-	// 	OR find a way to wildcard MultiNamespacedCacheBuilder
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -85,7 +84,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.TopologyReconciler{
+	if err = (&syncer.TopologyReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Topology"),
 		Scheme: mgr.GetScheme(),
@@ -94,7 +93,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.TopologyPartReconciler{
+	if err = (&topologypart_revisions.TopologyPartReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("TopologyPart"),
 		Scheme: mgr.GetScheme(),
@@ -102,6 +101,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "TopologyPart")
 		os.Exit(1)
 	}
+
 	//+kubebuilder:scaffold:builder
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")

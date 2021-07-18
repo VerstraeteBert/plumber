@@ -3,7 +3,7 @@ package domain
 import (
 	"errors"
 	"github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers/util"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	v1 "k8s.io/api/core/v1"
 	"strings"
 )
@@ -62,8 +62,8 @@ func convertProcessorFromCRD(processorName string, processor v1alpha1.Processor,
 		OutputComponentNames:  strings.Split(processor.SinkBindings, ";"), // inter-processor connections not yet taken into account
 		OutputKafkaReferences: make(map[string]KafkaReference),
 		Image:                 processor.Image,
-		EnvVars:               util.ConvertEnvVars(processor.Env),
-		MaxReplicas:           util.MaxInt(defaultMaxReplicas, processor.MaxScale),
+		EnvVars:               shared.ConvertEnvVars(processor.Env),
+		MaxReplicas:           shared.MaxInt(defaultMaxReplicas, processor.MaxScale),
 	}
 }
 

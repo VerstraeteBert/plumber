@@ -1,4 +1,4 @@
-package util
+package shared
 
 var exists = struct{}{}
 

@@ -1,11 +1,11 @@
-package controllers
+package syncer
 
 import (
 	"context"
 	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers/domain"
-	"github.com/VerstraeteBert/plumber-operator/controllers/util"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer/domain"
 	"github.com/go-logr/logr"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -71,7 +71,7 @@ func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/finalizers,verbs=update
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topologypart,verbs=get;list;watch
 func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	defer util.Elapsed(r.Log, "Reconciliation")()
+	defer shared.Elapsed(r.Log, "Reconciliation")()
 	// 1. get composition object: check if deleted
 	var crdComp plumberv1alpha1.Topology
 	if err := r.Get(ctx, req.NamespacedName, &crdComp); err != nil {

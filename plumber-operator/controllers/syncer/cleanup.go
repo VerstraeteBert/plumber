@@ -1,17 +1,17 @@
-package controllers
+package syncer
 
 import (
 	"context"
-	"github.com/VerstraeteBert/plumber-operator/controllers/domain"
-	"github.com/VerstraeteBert/plumber-operator/controllers/util"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer/domain"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func buildNecessaryObjsSet(domainTopo *domain.Topology) *util.Set {
-	set := util.NewSet()
+func buildNecessaryObjsSet(domainTopo *domain.Topology) *shared.Set {
+	set := shared.NewSet()
 	for _, processor := range domainTopo.Processors {
 		set.Add(GetDeploymentName(processor.Name))
 		set.Add(GetScalerName(processor.Name))
@@ -23,7 +23,7 @@ func buildNecessaryObjsSet(domainTopo *domain.Topology) *util.Set {
 	return set
 }
 
-func (r *TopologyReconciler) cleanup(namespace string, filter *util.Set) error {
+func (r *TopologyReconciler) cleanup(namespace string, filter *shared.Set) error {
 	// gets all the current running objects pertaining the the current reconciled Topology and deletes them.
 	// Currently, only deployments are created, topics are kept indefinitely
 	listOpts := []client.ListOption{
