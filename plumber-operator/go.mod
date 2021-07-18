@@ -7,6 +7,7 @@ require (
 	github.com/kedacore/keda/v2 v2.2.0
 	github.com/onsi/ginkgo v1.15.2
 	github.com/onsi/gomega v1.11.0
+	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744 // indirect
 	honnef.co/go/tools v0.1.4 // indirect

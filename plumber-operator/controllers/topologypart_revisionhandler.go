@@ -58,7 +58,6 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		// an older revision exists, check for equality of desired spec with last created revision
 		prevRevision := revisionHistory[len(revisionHistory)-1]
 		var prevTopologyPart plumberv1alpha1.TopologyPart
-		// FIXME what I'm doing here is quite dangerous; I'm assuming that the provided object struct will be correctly populated
 		_, _, err := unstructured.UnstructuredJSONScheme.Decode(prevRevision.Data.Raw, &schema.GroupVersionKind{
 			Group:   "plumber.ugent.be",
 			Version: "v1alpha1",
@@ -66,7 +65,6 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 		}, &prevTopologyPart)
 		if err != nil {
 			rh.Log.Error(err, "failed to decode last revision")
-			// FIXME this should be handled in a different manner, should just make a new revision, since the last one is corrupt
 			return reconcile.Result{}, err
 		}
 
@@ -125,7 +123,7 @@ func createNewRevision(topologyPart *plumberv1alpha1.TopologyPart, revisionNum i
 			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      topologyPart.Name + "-revision-" + strconv.FormatInt(revisionNum, 10),
+			Name:      "topologypart" + "-" + topologyPart.Name + "-revision-" + strconv.FormatInt(revisionNum, 10),
 			Namespace: topologyPart.Namespace,
 			Labels: map[string]string{
 				ControllerRevisionManagedByLabel: topologyPart.Name,

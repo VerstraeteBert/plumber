@@ -27,6 +27,7 @@ type TopologyPartReference struct {
 
 // TopologySpec defines the desired state of the Topology
 type TopologySpec struct {
+	// Parts holds a list of references to TopologyPart revisions, such that the updater can construct full Topologies from these references
 	// +optional
 	Parts []TopologyPartReference `json:"parts,omitempty"`
 	// DefaultScale corresponds to the default maximum amount of replicas a processor can have
@@ -41,6 +42,12 @@ type TopologySpec struct {
 
 // TopologyStatus defines the observed state of Topology
 type TopologyStatus struct {
+	// ActiveRevision is the TopologyRevision ID that is currently active, i.e. actively processing messages end-to-end
+	ActiveRevision *int64 `json:"activeRevision"`
+	// NextRevision holds the TopologyRevision ID that is queued up to become the ActiveRevision
+	NextRevision *int64 `json:"nextRevision"`
+	// PhasingOutRevisions hold a list of TopologyRevision IDs that are currently being phased-out, i.e. processing any left-over messages
+	PhasingOutRevisions []*int64 `json:"phasingOutRevisions"`
 	// Status contains the last observed status of the overall Topology
 	// +optional
 	Status []metav1.Condition `json:"topoconds"`

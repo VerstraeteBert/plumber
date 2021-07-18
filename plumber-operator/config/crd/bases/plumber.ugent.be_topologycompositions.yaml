@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: topologyparts.plumber.ugent.be
+  name: topologycompositions.plumber.ugent.be
 spec:
   group: plumber.ugent.be
   names:
-    kind: TopologyPart
-    listKind: TopologyPartList
-    plural: topologyparts
-    singular: topologypart
+    kind: TopologyComposition
+    listKind: TopologyCompositionList
+    plural: topologycompositions
+    singular: topologycomposition
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TopologyPart is the Schema for the topologies API
+        description: ComposedTopology is the Schema for the ComposedTopologies API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,11 +34,14 @@ spec:
           metadata:
             type: object
           spec:
-            description: TopologyPartSpec defines the desired state of Topology
+            description: TopologyCompositionSpec defines the desired state of Topology
+              at a certain point, in use for TopologyRevisions
             properties:
               processors:
                 additionalProperties:
                   properties:
+                    consumerGroup:
+                      type: string
                     env:
                       items:
                         properties:
@@ -63,6 +66,7 @@ spec:
                     sinkBindings:
                       type: string
                   required:
+                  - consumerGroup
                   - image
                   - inputFrom
                   - maxScale
@@ -106,13 +110,8 @@ spec:
                 type: object
             type: object
           status:
-            description: TopologyPartStatus defines the observed state of TopologyPart
-            properties:
-              latestRevision:
-                format: int64
-                type: integer
-            required:
-            - latestRevision
+            description: TopologyCompositionStatus defines the observed state of a
+              ComposedTopology, currently not used anywhere
             type: object
         type: object
     served: true
