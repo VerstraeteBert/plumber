@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -64,23 +65,20 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 			sidecarConfig := buildSidecarConfig(pName, procKRefs, activeRev)
 			deployment := generateDeployment(pName, proc, topo.Name, activeRev, sidecarConfig)
 			// safe to ignore the error
-			//err = ctrl.SetControllerReference(activeRevControllerRev, &deployment, r.Scheme)
-			//if err != nil {
-			//	r.Log.Error(err, err.Error())
-			//	return fmt.Errorf("failed to set ownerreference for deployment %s", deployment.Name)
-			//}
-			err := r.Patch(context.TODO(), &deployment, client.Apply, applyOpts...)
+			err := ctrl.SetControllerReference(&activeRev, &deployment, r.Scheme)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for deployment %s", deployment.Name))
+			}
+			err = r.Patch(context.TODO(), &deployment, client.Apply, applyOpts...)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to patch deployment for processor %s", pName))
 			}
-
 			// reconcile scaled object (keda)
 			scaledObject := generateScaledObject(proc, topo.Namespace, pName, topo.Name, activeRev.Spec.Revision, procKRefs)
-			//err = ctrl.SetControllerReference(crdTopo, &scaledObject, r.Scheme)
-			//if err != nil {
-			//	r.Log.Error(err, err.Error())
-			//	return fmt.Errorf("failed to set ownerreference for scaledObject %s", scaledObject.Name)
-			//}
+			err = ctrl.SetControllerReference(&activeRev, &scaledObject, r.Scheme)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for scaledObject %s", scaledObject.Name))
+			}
 			err = r.Patch(context.TODO(), &scaledObject, client.Apply, applyOpts...)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to update scaled object for processor %s", pName))
