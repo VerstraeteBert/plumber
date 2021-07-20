@@ -10,7 +10,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strconv"
@@ -292,18 +294,24 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 	connectedProcessorsMaxScale := make(map[string]int)
 	// combine information from all referenced topologyparts
 	for _, topoPartRef := range u.topology.Spec.Parts {
-		var topoPart plumberv1alpha1.TopologyPart
+		var topoPartControllerRev appsv1.ControllerRevision
 		err := u.cClient.Get(context.TODO(),
 			client.ObjectKey{
 				Namespace: u.topology.Namespace,
 				Name:      "topologypart-" + topoPartRef.Name + "-revision-" + strconv.FormatInt(topoPartRef.Revision, 10),
 			},
-			&topoPart,
+			&topoPartControllerRev,
 		)
 		if err != nil {
 			// TODO isnotfound handling
 			return plumberv1alpha1.TopologyRevision{}, errors.Wrap(err, "failed to get topologyparts objects while creating revision from topology")
 		}
+		var topoPart plumberv1alpha1.TopologyPart
+		_, _, _ = unstructured.UnstructuredJSONScheme.Decode(topoPartControllerRev.Data.Raw, &schema.GroupVersionKind{
+			Group:   "plumber.ugent.be",
+			Version: "v1alpha1",
+			Kind:    "TopologyPart",
+		}, &topoPart)
 		for name, source := range topoPart.Spec.Sources {
 			revSpec.Sources[name] = source
 		}
