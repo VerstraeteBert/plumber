@@ -123,8 +123,8 @@ func (a TopologyRevision) SemanticallyEqual(b TopologyRevision) bool {
 	}
 	revACopy.Revision = 0
 	revBCopy.Revision = 0
-	fmt.Println(cmp.Diff(a, b))
-	return cmp.Equal(a, b)
+	fmt.Println(cmp.Diff(revACopy, revBCopy))
+	return cmp.Equal(revACopy, revBCopy)
 }
 
 func (cp *ComposedProcessor) HasOutputTopic() bool {

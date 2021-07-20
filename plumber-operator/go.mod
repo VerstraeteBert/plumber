@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/go-logr/logr v0.4.0
+	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/kedacore/keda/v2 v2.2.0
 	github.com/onsi/ginkgo v1.15.2
 	github.com/onsi/gomega v1.11.0
