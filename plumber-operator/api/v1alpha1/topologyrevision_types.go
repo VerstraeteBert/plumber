@@ -15,7 +15,7 @@ type TopologyRevisionSpec struct {
 	Processors map[string]ComposedProcessor `json:"processors,omitempty"`
 	// +optional
 	DefaultScale *int `json:"defaultScale,omitempty"`
-	Revision     int64
+	Revision     int64 `json:"revision"`
 }
 
 type InternalTopic struct {

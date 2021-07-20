@@ -37,6 +37,8 @@ spec:
             description: TopologyRevisionSpec defines the desired state of Topology
               at a certain point, in use for TopologyRevisions
             properties:
+              defaultScale:
+                type: integer
               processors:
                 additionalProperties:
                   properties:
@@ -56,8 +58,34 @@ spec:
                       type: array
                     image:
                       type: string
+                    initialOffset:
+                      enum:
+                      - earliest
+                      - latest
+                      - continue
+                      type: string
                     inputFrom:
                       type: string
+                    internal:
+                      properties:
+                        consumerGroup:
+                          type: string
+                        initialOffset:
+                          enum:
+                          - earliest
+                          - latest
+                          type: string
+                        outputTopic:
+                          properties:
+                            partitions:
+                              type: integer
+                          required:
+                          - partitions
+                          type: object
+                      required:
+                      - consumerGroup
+                      - initialOffset
+                      type: object
                     maxScale:
                       default: 5
                       maximum: 100
@@ -69,9 +97,13 @@ spec:
                   - consumerGroup
                   - image
                   - inputFrom
+                  - internal
                   - maxScale
                   type: object
                 type: object
+              revision:
+                format: int64
+                type: integer
               sinks:
                 additionalProperties:
                   properties:
@@ -108,6 +140,8 @@ spec:
                   - type
                   type: object
                 type: object
+            required:
+            - revision
             type: object
           status:
             description: TopologyRevisionStatus defines the observed state of a TopologyRevision,
