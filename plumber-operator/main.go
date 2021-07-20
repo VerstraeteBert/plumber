@@ -20,6 +20,7 @@ import (
 	"flag"
 	"github.com/VerstraeteBert/plumber-operator/controllers/syncer"
 	"github.com/VerstraeteBert/plumber-operator/controllers/topologypart_revisions"
+	"github.com/VerstraeteBert/plumber-operator/controllers/updater"
 	"os"
 
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
@@ -86,19 +87,28 @@ func main() {
 
 	if err = (&syncer.TopologyReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Topology"),
+		Log:    ctrl.Log.WithName("plumber").WithName("Syncer"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Topology")
+		setupLog.Error(err, "unable to create controller", "controller", "Syncer")
+		os.Exit(1)
+	}
+
+	if err = (&updater.UpdaterReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("plumber").WithName("Updater"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Updater")
 		os.Exit(1)
 	}
 
 	if err = (&topologypart_revisions.TopologyPartReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("TopologyPart"),
+		Log:    ctrl.Log.WithName("updater").WithName("TopologyPartRevisionHandler"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "TopologyPart")
+		setupLog.Error(err, "unable to create controller", "controller", "TopologyPartRevisionHandler")
 		os.Exit(1)
 	}
 
