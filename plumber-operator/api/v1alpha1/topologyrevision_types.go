@@ -119,7 +119,7 @@ func (a TopologyRevision) SemanticallyEqual(b TopologyRevision) bool {
 	}
 	for k, p := range revBCopy.Processors {
 		p.Internal = InternalProcDetails{}
-		revACopy.Processors[k] = p
+		revBCopy.Processors[k] = p
 	}
 	revACopy.Revision = 0
 	revBCopy.Revision = 0
