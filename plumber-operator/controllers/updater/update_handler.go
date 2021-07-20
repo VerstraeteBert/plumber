@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
@@ -40,7 +41,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 	}
 	_ = u.pruneRevisions()
 	nextRevNum := getNextRevisionNumber(revisionHistory)
-	u.Log.Info("new revision number: %d", nextRevNum)
+	u.Log.Info(fmt.Sprintf("new revision number: %d", nextRevNum))
 	newRevision, err := u.revisionFromTopologyWithDefaults(nextRevNum)
 	if err != nil {
 		return reconcile.Result{}, err
