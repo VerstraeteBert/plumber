@@ -56,7 +56,7 @@ type Processor struct {
 	// +optional
 	SinkBindings string `json:"sinkBindings,omitempty"`
 	// +optional
-	// +kubebuilder:validation:Enum=earliest;latest;continue
+	// +kubebuilder:validation:Enum=Earliest;Latest;Continue
 	InitialOffset string `json:"initialOffset,omitempty"`
 }
 

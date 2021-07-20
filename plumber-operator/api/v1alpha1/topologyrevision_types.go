@@ -23,7 +23,7 @@ type InternalTopic struct {
 }
 
 type InternalProcDetails struct {
-	// +kubebuilder:validation:Enum=earliest;latest
+	// +kubebuilder:validation:Enum=Earliest;Latest
 	InitialOffset string `json:"initialOffset"`
 	ConsumerGroup string `json:"consumerGroup"`
 	// +optional
@@ -42,7 +42,7 @@ type ComposedProcessor struct {
 	// +optional
 	SinkBindings string `json:"sinkBindings,omitempty"`
 	// +optional
-	// +kubebuilder:validation:Enum=earliest;latest;continue
+	// +kubebuilder:validation:Enum=Earliest;Latest;Continue
 	InitialOffset string              `json:"initialOffset,omitempty"`
 	Internal      InternalProcDetails `json:"internal"`
 }
