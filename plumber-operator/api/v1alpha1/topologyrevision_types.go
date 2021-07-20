@@ -1,8 +1,9 @@
 package v1alpha1
 
 import (
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"reflect"
+	"github.com/google/go-cmp/cmp"
 )
 
 // TopologyRevisionSpec defines the desired state of Topology at a certain point, in use for TopologyRevisions
@@ -69,7 +70,47 @@ type TopologyRevisionList struct {
 }
 
 // EqualRevisionSpecsSemantic checks if two revision specs are semantically deeply equal; i.e. only their consumer groups may differ
-func (a *TopologyRevision) EqualRevisionSpecsSemantic(b *TopologyRevision) bool {
+func (a TopologyRevision) SemanticallyEqual(b TopologyRevision) bool {
+	//if len(a.Spec.Sources) != len(b.Spec.Sources) {
+	//	return false
+	//}
+	//for k, v1 := range a.Spec.Sources {
+	//	if v2, found := b.Spec.Sources[k]; found {
+	//		if !reflect.DeepEqual(v1, v2) {
+	//			return false
+	//		}
+	//	} else {
+	//		return false
+	//	}
+	//}
+	//if len(a.Spec.Sinks) != len(b.Spec.Sinks) {
+	//	return false
+	//}
+	//for k, v1 := range a.Spec.Sinks {
+	//	if v2, found := b.Spec.Sinks[k]; found {
+	//		if !reflect.DeepEqual(v1, v2) {
+	//			return false
+	//		}
+	//	} else {
+	//		return false
+	//	}
+	//}
+	//if len(a.Spec.Processors) != len(b.Spec.Processors) {
+	//	return false
+	//}
+	//for k, v1 := range a.Spec.Processors {
+	//	if v2, found := b.Spec.Processors[k]; found {
+	//		if v1.InputFrom != v2.InputFrom {
+	//			return false
+	//		}
+	//		if v1.Image != v2.Image {
+	//			return false
+	//		}
+	//		if v1.MaxScale == nil &&
+	//	} else {
+	//		return false
+	//	}
+	//}
 	revACopy := a.Spec.DeepCopy()
 	revBCopy := b.Spec.DeepCopy()
 	for k, p := range revACopy.Processors {
@@ -82,7 +123,8 @@ func (a *TopologyRevision) EqualRevisionSpecsSemantic(b *TopologyRevision) bool 
 	}
 	revACopy.Revision = 0
 	revBCopy.Revision = 0
-	return reflect.DeepEqual(revACopy, revBCopy)
+	fmt.Println(cmp.Diff(a, b))
+	return cmp.Equal(a, b)
 }
 
 func (cp *ComposedProcessor) HasOutputTopic() bool {

@@ -75,7 +75,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			// 	 2. persist new revision
 			//   3. set new revision to be next
 			//   4. requeue immediately
-			if newRevision.EqualRevisionSpecsSemantic(nextRevision) {
+			if newRevision.SemanticallyEqual(*nextRevision) {
 				//goland:noinspection GoNilness
 				readyForPhaseOut, err := u.checkActiveRevisionReadyForPhaseOut(*activeRevision)
 				if err != nil {
@@ -130,7 +130,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//   persist new revision
 			//   unset next, set new to active
 			//   done
-			if newRevision.EqualRevisionSpecsSemantic(nextRevision) {
+			if newRevision.SemanticallyEqual(*nextRevision) {
 				currentTopo := u.topology.DeepCopy()
 				currentTopo.Status.ActiveRevision = currentTopo.Status.NextRevision
 				currentTopo.Status.NextRevision = nil
@@ -175,7 +175,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//  2. persist new revision
 			//  3. set new revision to be next
 			//  4. requeue after 10 -> branch where active and next are set will be taken
-			if newRevision.EqualRevisionSpecsSemantic(activeRevision) {
+			if newRevision.SemanticallyEqual(*activeRevision) {
 				u.Log.Info("revisions are equal!")
 				return reconcile.Result{}, nil
 			}
