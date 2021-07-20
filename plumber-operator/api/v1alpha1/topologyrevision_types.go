@@ -1,8 +1,8 @@
 package v1alpha1
 
 import (
+	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"reflect"
 )
 
 // TopologyRevisionSpec defines the desired state of Topology at a certain point, in use for TopologyRevisions
@@ -14,8 +14,8 @@ type TopologyRevisionSpec struct {
 	// +optional
 	Processors map[string]ComposedProcessor `json:"processors,omitempty"`
 	// +optional
-	DefaultScale *int `json:"defaultScale,omitempty"`
-	Revision     int64
+	DefaultScale *int  `json:"defaultScale,omitempty"`
+	Revision     int64 `json:"revision"`
 }
 
 type InternalTopic struct {
@@ -23,27 +23,26 @@ type InternalTopic struct {
 }
 
 type InternalProcDetails struct {
-	// +kubebuilder:validation:Enum=earliest;latest
+	// +kubebuilder:validation:Enum=Earliest;Latest
 	InitialOffset string `json:"initialOffset"`
 	ConsumerGroup string `json:"consumerGroup"`
 	// +optional
-	OutputTopic *InternalTopic `json:"outputTopic"`
+	OutputTopic *InternalTopic `json:"outputTopic,omitempty"`
 }
 
 type ComposedProcessor struct {
-	InputFrom     string `json:"inputFrom"`
-	Image         string `json:"image"`
-	ConsumerGroup string `json:"consumerGroup"`
+	InputFrom string `json:"inputFrom"`
+	Image     string `json:"image"`
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
-	MaxScale *int `json:"maxScale"`
+	MaxScale *int `json:"maxScale,omitempty"`
 	// +optional
 	Env []EnvVar `json:"env,omitempty"`
 	// +optional
 	SinkBindings string `json:"sinkBindings,omitempty"`
 	// +optional
-	// +kubebuilder:validation:Enum=earliest;latest;continue
+	// +kubebuilder:validation:Enum=Earliest;Latest;Continue
 	InitialOffset string              `json:"initialOffset,omitempty"`
 	Internal      InternalProcDetails `json:"internal"`
 }
@@ -70,7 +69,7 @@ type TopologyRevisionList struct {
 }
 
 // EqualRevisionSpecsSemantic checks if two revision specs are semantically deeply equal; i.e. only their consumer groups may differ
-func (a *TopologyRevision) EqualRevisionSpecsSemantic(b *TopologyRevision) bool {
+func (a TopologyRevision) SemanticallyEqual(b TopologyRevision) bool {
 	revACopy := a.Spec.DeepCopy()
 	revBCopy := b.Spec.DeepCopy()
 	for k, p := range revACopy.Processors {
@@ -79,11 +78,11 @@ func (a *TopologyRevision) EqualRevisionSpecsSemantic(b *TopologyRevision) bool 
 	}
 	for k, p := range revBCopy.Processors {
 		p.Internal = InternalProcDetails{}
-		revACopy.Processors[k] = p
+		revBCopy.Processors[k] = p
 	}
 	revACopy.Revision = 0
 	revBCopy.Revision = 0
-	return reflect.DeepEqual(revACopy, revBCopy)
+	return cmp.Equal(revACopy, revBCopy)
 }
 
 func (cp *ComposedProcessor) HasOutputTopic() bool {

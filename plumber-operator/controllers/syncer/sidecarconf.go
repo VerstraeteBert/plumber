@@ -29,14 +29,12 @@ type SidecarConfig struct {
 }
 
 func buildSidecarConfig(pName string, refs processorKafkaRefs, topoRev plumberv1alpha1.TopologyRevision) SidecarConfig {
-	confOutputRefs := make([]confOutputRef, len(refs.outputRefs))
-	i := 0
-	for _, v := range refs.outputRefs {
-		confOutputRefs[i] = confOutputRef{
-			Topic:   v.topic,
-			Brokers: v.bootstrapServers,
-		}
-		i++
+	confOutputRefs := make([]confOutputRef, 0)
+	for _, o := range refs.outputRefs {
+		confOutputRefs = append(confOutputRefs, confOutputRef{
+			Topic:   o.topic,
+			Brokers: o.bootstrapServers,
+		})
 	}
 	return SidecarConfig{
 		InputRef: confInputRef{

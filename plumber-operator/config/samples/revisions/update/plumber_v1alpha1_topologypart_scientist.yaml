@@ -1,7 +1,7 @@
 apiVersion: plumber.ugent.be/v1alpha1
 kind: TopologyPart
 metadata:
-  name: my-first-topo-scientist
+  name: branched-topo-scientist
 spec:
   processors:
     transformer-input:
@@ -18,12 +18,4 @@ spec:
         - name: MSG
           value: "Hello from branch 0!"
       sinkBindings: kafka-egress-0
-      maxScale: 20
-    transformer-branch-1:
-      inputFrom: transformer-input
-      image: "verstraetebert/plumber-greeter:v0.0.1"
-      env:
-        - name: MSG
-          value: "Hello from branch 1!"
-      sinkBindings: kafka-egress-1
       maxScale: 20

@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
@@ -10,7 +11,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strconv"
@@ -22,14 +25,16 @@ type Updater struct {
 	Log      logr.Logger
 	topology *plumberv1alpha1.Topology
 	scheme   *runtime.Scheme
+	uClient  client.Client
 }
 
 const (
-	ControllerRevisionManagedByLabel string = "plumber.ugent.be/managed-by"
-	ContollerRevisionNumber                 = "plumber.ugent.be/revision-number"
+	RevisionManagedByLabel string = "plumber.ugent.be/managed-by"
+	RevisionNumberLabel           = "plumber.ugent.be/revision-number"
 )
 
 func (u *Updater) handle() (reconcile.Result, error) {
+	defer shared.Elapsed(u.Log, "updater loop")()
 	revisionHistory, err := u.listTopologyRevisions()
 	if err != nil {
 		u.Log.Error(err, "failed to list topology revisions")
@@ -37,6 +42,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 	}
 	_ = u.pruneRevisions()
 	nextRevNum := getNextRevisionNumber(revisionHistory)
+	u.Log.Info(fmt.Sprintf("new revision number: %d", nextRevNum))
 	newRevision, err := u.revisionFromTopologyWithDefaults(nextRevNum)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -47,9 +53,11 @@ func (u *Updater) handle() (reconcile.Result, error) {
 	var activeRevision *plumberv1alpha1.TopologyRevision
 	var nextRevision *plumberv1alpha1.TopologyRevision
 	if isActiveRevisionSet {
+		u.Log.Info("active revision set")
 		activeRevision, isActiveRevisionSet = revisionHistory[*u.topology.Status.ActiveRevision]
 	}
 	if isNextRevisionSet {
+		u.Log.Info("next revision set")
 		nextRevision, isNextRevisionSet = revisionHistory[*u.topology.Status.NextRevision]
 	}
 	if isNextRevisionSet {
@@ -68,7 +76,8 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			// 	 2. persist new revision
 			//   3. set new revision to be next
 			//   4. requeue immediately
-			if newRevision.EqualRevisionSpecsSemantic(nextRevision) {
+			if //goland:noinspection GoNilness
+			newRevision.SemanticallyEqual(*nextRevision) {
 				//goland:noinspection GoNilness
 				readyForPhaseOut, err := u.checkActiveRevisionReadyForPhaseOut(*activeRevision)
 				if err != nil {
@@ -77,7 +86,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 				if !readyForPhaseOut {
 					u.Log.Info("syncer has not yet completed phasing out preparation, requeuing")
 					return reconcile.Result{
-						RequeueAfter: time.Second * 10,
+						RequeueAfter: time.Second * 5,
 					}, nil
 				}
 				currentTopo := u.topology.DeepCopy()
@@ -123,7 +132,8 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//   persist new revision
 			//   unset next, set new to active
 			//   done
-			if newRevision.EqualRevisionSpecsSemantic(nextRevision) {
+			if //goland:noinspection GoNilness
+			newRevision.SemanticallyEqual(*nextRevision) {
 				currentTopo := u.topology.DeepCopy()
 				currentTopo.Status.ActiveRevision = currentTopo.Status.NextRevision
 				currentTopo.Status.NextRevision = nil
@@ -168,7 +178,9 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//  2. persist new revision
 			//  3. set new revision to be next
 			//  4. requeue after 10 -> branch where active and next are set will be taken
-			if newRevision.EqualRevisionSpecsSemantic(activeRevision) {
+			if //goland:noinspection GoNilness
+			newRevision.SemanticallyEqual(*activeRevision) {
+				u.Log.Info("revisions are equal!")
 				return reconcile.Result{}, nil
 			}
 			// activeRev can't be nil
@@ -191,7 +203,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 				}
 			}
 			return reconcile.Result{
-				RequeueAfter: time.Second * 10,
+				RequeueAfter: time.Second * 5,
 			}, nil
 		} else {
 			// active and next unset
@@ -222,9 +234,10 @@ func (u *Updater) handle() (reconcile.Result, error) {
 // checkActiveRevisionReadyForPhaseOut checks if a revision is ready for phasing out
 // this condition is met if all deployments & scaledobjects of these processors are deleted
 func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1alpha1.TopologyRevision) (bool, error) {
-	for pName, _ := range activeRevision.Spec.Processors {
+	for pName := range activeRevision.Spec.Processors {
+		deployDeleted := false
 		var pDeploy appsv1.Deployment
-		err := u.cClient.Get(
+		err := u.uClient.Get(
 			context.TODO(),
 			client.ObjectKey{
 				Namespace: activeRevision.Namespace,
@@ -233,15 +246,17 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 			&pDeploy,
 		)
 		if err != nil {
-			if !kerrors.IsNotFound(err) {
-				return false, err
+			if kerrors.IsNotFound(err) {
+				deployDeleted = true
+			} else {
+				return false, errors.Wrap(err, "failed to get deployment when checking phaseout readiness")
 			}
-		} else {
-			// deploy found; possibly finalizing -> requeue
+		}
+		if !deployDeleted {
 			return false, nil
 		}
 		var pScaledObj kedav1alpha1.ScaledObject
-		err = u.cClient.Get(
+		err = u.uClient.Get(
 			context.TODO(),
 			client.ObjectKey{
 				Namespace: activeRevision.Namespace,
@@ -250,11 +265,13 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 			&pScaledObj,
 		)
 		if err != nil {
-			if !kerrors.IsNotFound(err) {
-				return false, err
+			if kerrors.IsNotFound(err) {
+				return true, nil
+			} else {
+				return false, errors.Wrap(err, "failed to get scaledobject when checking phaseout readiness")
 			}
 		} else {
-			// deploy found; possibly finalizing -> requeue
+			// scaledobj found; possibly finalizing -> requeue
 			return false, nil
 		}
 	}
@@ -264,7 +281,7 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 func propagateCGs(newRevision *plumberv1alpha1.TopologyRevision, activeRevision plumberv1alpha1.TopologyRevision) {
 	for nProcessorName, nProcessor := range newRevision.Spec.Processors {
 		// if supplied initialOffset != continue -> already set correctly (earliest/latest during building of revision or defaulted)
-		if nProcessor.InitialOffset != shared.OffsetContinue {
+		if nProcessor.InitialOffset != shared.OffsetContinue && nProcessor.InitialOffset != "" {
 			continue
 		}
 		// if both in active and new revision, the same processor (name) refers to the same source (name) -> take over CGs
@@ -272,7 +289,7 @@ func propagateCGs(newRevision *plumberv1alpha1.TopologyRevision, activeRevision 
 			if aProcessor, aProcessorExists := activeRevision.Spec.Processors[nProcessorName]; aProcessorExists {
 				if _, aIsSourceRef := activeRevision.Spec.Sources[aProcessor.InputFrom]; aIsSourceRef {
 					// take over CG
-					nProcessor.ConsumerGroup = aProcessor.ConsumerGroup
+					nProcessor.Internal.ConsumerGroup = aProcessor.Internal.ConsumerGroup
 					newRevision.Spec.Processors[nProcessorName] = nProcessor
 				}
 			}
@@ -292,18 +309,24 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 	connectedProcessorsMaxScale := make(map[string]int)
 	// combine information from all referenced topologyparts
 	for _, topoPartRef := range u.topology.Spec.Parts {
-		var topoPart plumberv1alpha1.TopologyPart
+		var topoPartControllerRev appsv1.ControllerRevision
 		err := u.cClient.Get(context.TODO(),
 			client.ObjectKey{
 				Namespace: u.topology.Namespace,
 				Name:      "topologypart-" + topoPartRef.Name + "-revision-" + strconv.FormatInt(topoPartRef.Revision, 10),
 			},
-			&topoPart,
+			&topoPartControllerRev,
 		)
 		if err != nil {
 			// TODO isnotfound handling
 			return plumberv1alpha1.TopologyRevision{}, errors.Wrap(err, "failed to get topologyparts objects while creating revision from topology")
 		}
+		var topoPart plumberv1alpha1.TopologyPart
+		_, _, _ = unstructured.UnstructuredJSONScheme.Decode(topoPartControllerRev.Data.Raw, &schema.GroupVersionKind{
+			Group:   "plumber.ugent.be",
+			Version: "v1alpha1",
+			Kind:    "TopologyPart",
+		}, &topoPart)
 		for name, source := range topoPart.Spec.Sources {
 			revSpec.Sources[name] = source
 		}
@@ -338,11 +361,12 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 				}
 			}
 			revSpec.Processors[name] = plumberv1alpha1.ComposedProcessor{
-				InputFrom:    proc.InputFrom,
-				Image:        proc.Image,
-				MaxScale:     proc.MaxScale,
-				Env:          proc.Env,
-				SinkBindings: proc.SinkBindings,
+				InputFrom:     proc.InputFrom,
+				Image:         proc.Image,
+				MaxScale:      proc.MaxScale,
+				Env:           proc.Env,
+				SinkBindings:  proc.SinkBindings,
+				InitialOffset: proc.InitialOffset,
 				Internal: plumberv1alpha1.InternalProcDetails{
 					ConsumerGroup: u.topology.Namespace + "-" + u.topology.Name + "-" + name + "-" + strconv.FormatInt(revisionNumber, 10),
 					InitialOffset: initialOffset,
@@ -363,8 +387,11 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 			APIVersion: plumberv1alpha1.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      u.topology.Name,
+			Name:      shared.BuildTopoRevisionName(u.topology.Name, revisionNumber),
 			Namespace: u.topology.Namespace,
+			Labels: map[string]string{
+				RevisionManagedByLabel: u.topology.GetName(),
+			},
 		},
 		Spec:   revSpec,
 		Status: plumberv1alpha1.TopologyRevisionStatus{},

@@ -6,9 +6,12 @@ import (
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
+	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -56,31 +59,64 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 		}
 	}
 	for pName, proc := range activeRev.Spec.Processors {
-		// generate and
+		// generate scaledobject / deployment per processor
+		// important: if a NextRevision is set, any deployment/scaledobject of a processor connected to a source must be deleted to prepare for phase-out
+		if topo.Status.NextRevision == nil {
+			r.Log.Info("Next revision is nil")
+		}
 		if _, takesInputFromSource := activeRev.Spec.Sources[proc.InputFrom]; takesInputFromSource && topo.Status.NextRevision != nil {
-			continue
+			r.Log.Info(fmt.Sprintf("Next revision is %d", *topo.Status.NextRevision))
+			var deployToDelete appsv1.Deployment
+			err := r.Client.Get(context.TODO(), client.ObjectKey{
+				Namespace: topo.GetNamespace(),
+				Name:      shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision),
+			}, &deployToDelete)
+			if err != nil {
+				if !kerrors.IsNotFound(err) {
+					return errors.Wrap(err, "failed to fetch deployment of source connected processor")
+				}
+			} else {
+				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision)))
+				err := r.Client.Delete(context.TODO(), &deployToDelete)
+				if err != nil && !kerrors.IsNotFound(err) {
+					return errors.Wrap(err, "failed to delete deployment of source connected processor")
+				}
+			}
+			var scaledObjToDelete kedav1alpha1.ScaledObject
+			err = r.Client.Get(context.TODO(), client.ObjectKey{
+				Namespace: topo.GetNamespace(),
+				Name:      shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision),
+			}, &scaledObjToDelete)
+			if err != nil {
+				if !kerrors.IsNotFound(err) {
+					return errors.Wrap(err, "failed to fetch scaledobject of source connected processor")
+				}
+			} else {
+				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision)))
+				err := r.Client.Delete(context.TODO(), &scaledObjToDelete)
+				if err != nil && !kerrors.IsNotFound(err) {
+					return errors.Wrap(err, "failed to delete scaledobject of source connected processor")
+				}
+			}
 		} else {
 			procKRefs := buildProcessorKafkaRefs(pName, proc, activeRev, topo.Name)
 			sidecarConfig := buildSidecarConfig(pName, procKRefs, activeRev)
 			deployment := generateDeployment(pName, proc, topo.Name, activeRev, sidecarConfig)
 			// safe to ignore the error
-			//err = ctrl.SetControllerReference(activeRevControllerRev, &deployment, r.Scheme)
-			//if err != nil {
-			//	r.Log.Error(err, err.Error())
-			//	return fmt.Errorf("failed to set ownerreference for deployment %s", deployment.Name)
-			//}
-			err := r.Patch(context.TODO(), &deployment, client.Apply, applyOpts...)
+			err := ctrl.SetControllerReference(&activeRev, &deployment, r.Scheme)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for deployment %s", deployment.Name))
+			}
+			err = r.Patch(context.TODO(), &deployment, client.Apply, applyOpts...)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to patch deployment for processor %s", pName))
 			}
-
 			// reconcile scaled object (keda)
 			scaledObject := generateScaledObject(proc, topo.Namespace, pName, topo.Name, activeRev.Spec.Revision, procKRefs)
-			//err = ctrl.SetControllerReference(crdTopo, &scaledObject, r.Scheme)
-			//if err != nil {
-			//	r.Log.Error(err, err.Error())
-			//	return fmt.Errorf("failed to set ownerreference for scaledObject %s", scaledObject.Name)
-			//}
+			err = ctrl.SetControllerReference(&activeRev, &scaledObject, r.Scheme)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for scaledObject %s", scaledObject.Name))
+			}
 			err = r.Patch(context.TODO(), &scaledObject, client.Apply, applyOpts...)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to update scaled object for processor %s", pName))

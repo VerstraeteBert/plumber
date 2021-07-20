@@ -2,10 +2,12 @@ package syncer
 
 import (
 	"context"
+	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
+	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,7 +44,6 @@ func syncerUpdaterFilters() predicate.Predicate {
 func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&plumberv1alpha1.Topology{}).
-		For(&plumberv1alpha1.Topology{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
 		WithEventFilter(syncerUpdaterFilters()).
@@ -53,7 +54,8 @@ func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/finalizers,verbs=update
 func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	defer shared.Elapsed(r.Log, "Reconciliation")()
+	defer shared.Elapsed(r.Log, "Syncing")()
+	r.Log.Info("starting syncer")
 	// 1. get composition object:
 	var topo plumberv1alpha1.Topology
 	if err := r.Get(ctx, req.NamespacedName, &topo); err != nil {
@@ -62,18 +64,20 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{}, nil
 		}
 		// requeue on any other error
-		r.Log.Error(err, "Failed to get Topology Object %s", req.String())
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Wrap(err, fmt.Sprintf("Failed to get Topology Object %s", req.String()))
 	}
 	// 2. Fetch active TopologyRevision
 	// if no activeRevision is set -> stop
+
 	if topo.Status.ActiveRevision == nil {
+		r.Log.Info("Active revision is nil")
 		return ctrl.Result{}, nil
 	}
+	r.Log.Info("Active revision is not nil")
 	var topoRev plumberv1alpha1.TopologyRevision
 	err := r.Client.Get(ctx,
 		types.NamespacedName{
-			Name:      shared.BuildTopoControllerRevisionName(topo.Name, *topo.Status.ActiveRevision),
+			Name:      shared.BuildTopoRevisionName(topo.Name, *topo.Status.ActiveRevision),
 			Namespace: topo.Namespace,
 		},
 		&topoRev,
@@ -89,7 +93,6 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// 3. patch processors
 	err = r.reconcileProcessors(topo, topoRev)
 	if err != nil {
-		r.Log.Error(err, err.Error())
 		return ctrl.Result{}, err
 	}
 

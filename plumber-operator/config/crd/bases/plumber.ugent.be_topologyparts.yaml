@@ -53,6 +53,12 @@ spec:
                       type: array
                     image:
                       type: string
+                    initialOffset:
+                      enum:
+                      - Earliest
+                      - Latest
+                      - Continue
+                      type: string
                     inputFrom:
                       type: string
                     maxScale:

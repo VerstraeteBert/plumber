@@ -21,9 +21,9 @@ import (
 	"github.com/VerstraeteBert/plumber-operator/controllers/syncer"
 	"github.com/VerstraeteBert/plumber-operator/controllers/topologypart_revisions"
 	"github.com/VerstraeteBert/plumber-operator/controllers/updater"
-	"os"
-
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
+	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -94,10 +94,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	uClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: mgr.GetScheme()})
+	if err != nil {
+		setupLog.Error(err, "failed to create uncached client")
+	}
 	if err = (&updater.UpdaterReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("plumber").WithName("Updater"),
-		Scheme: mgr.GetScheme(),
+		Client:  mgr.GetClient(),
+		Log:     ctrl.Log.WithName("plumber").WithName("Updater"),
+		Scheme:  mgr.GetScheme(),
+		UClient: uClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Updater")
 		os.Exit(1)
@@ -105,7 +110,7 @@ func main() {
 
 	if err = (&topologypart_revisions.TopologyPartReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("updater").WithName("TopologyPartRevisionHandler"),
+		Log:    ctrl.Log.WithName("plumber").WithName("TopologyPartRevisionHandler"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TopologyPartRevisionHandler")

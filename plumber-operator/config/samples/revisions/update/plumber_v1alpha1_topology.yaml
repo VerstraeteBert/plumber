@@ -7,6 +7,5 @@ spec:
     - name: branched-topo-engineer
       revision: 1 # should ideally default to the last created revision
     - name: branched-topo-scientist
-      revision: 1
+      revision: 2
   defaultScale: 5
-
