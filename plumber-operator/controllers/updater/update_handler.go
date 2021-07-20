@@ -40,6 +40,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 	}
 	_ = u.pruneRevisions()
 	nextRevNum := getNextRevisionNumber(revisionHistory)
+	u.Log.Info("new revision number: %d", nextRevNum)
 	newRevision, err := u.revisionFromTopologyWithDefaults(nextRevNum)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -185,7 +186,6 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			if err != nil {
 				return reconcile.Result{}, err
 			}
-			u.Log.Info("new rev num: %d", nextRevNum)
 			currentTopo := u.topology.DeepCopy()
 			currentTopo.Status.NextRevision = &newRevision.Spec.Revision
 			err = u.cClient.Status().Patch(context.TODO(), currentTopo, client.MergeFrom(u.topology), &client.PatchOptions{FieldManager: FieldManager})
