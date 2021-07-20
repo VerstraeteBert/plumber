@@ -32,6 +32,7 @@ const (
 )
 
 func (u *Updater) handle() (reconcile.Result, error) {
+	shared.Elapsed(u.Log, "updater loop")
 	revisionHistory, err := u.listTopologyRevisions()
 	if err != nil {
 		u.Log.Error(err, "failed to list topology revisions")
@@ -171,6 +172,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//  3. set new revision to be next
 			//  4. requeue after 10 -> branch where active and next are set will be taken
 			if newRevision.EqualRevisionSpecsSemantic(activeRevision) {
+				u.Log.Info("revisions are equal!")
 				return reconcile.Result{}, nil
 			}
 			// activeRev can't be nil
