@@ -47,6 +47,10 @@ func generateOutputTopic(processor plumberv1alpha1.ComposedProcessor, pName stri
 	return desiredKfkTopic
 }
 
+const (
+	LabelProcessor = "plumber.ugent.be/processor-name"
+)
+
 func generateDeployment(pName string, processor plumberv1alpha1.ComposedProcessor, topoName string, topoRev plumberv1alpha1.TopologyRevision, sidecarConf SidecarConfig) appsv1.Deployment {
 	jsonConfmap, _ := json.Marshal(sidecarConf)
 	desiredDeployment := appsv1.Deployment{
@@ -59,10 +63,13 @@ func generateDeployment(pName string, processor plumberv1alpha1.ComposedProcesso
 			Namespace: topoRev.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
-			Selector: &metav1.LabelSelector{},
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision)},
+			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: pName,
+					Labels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision)},
 				},
 				Spec: corev1.PodSpec{
 					// TODO readinessprobe / liveness probes ? both in SDK and Sidecar?
