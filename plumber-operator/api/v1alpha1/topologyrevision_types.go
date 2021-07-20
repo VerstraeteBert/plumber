@@ -27,7 +27,7 @@ type InternalProcDetails struct {
 	InitialOffset string `json:"initialOffset"`
 	ConsumerGroup string `json:"consumerGroup"`
 	// +optional
-	OutputTopic *InternalTopic `json:"outputTopic"`
+	OutputTopic *InternalTopic `json:"outputTopic,omitempty"`
 }
 
 type ComposedProcessor struct {
