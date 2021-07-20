@@ -95,7 +95,6 @@ spec:
                   - image
                   - inputFrom
                   - internal
-                  - maxScale
                   type: object
                 type: object
               revision:
