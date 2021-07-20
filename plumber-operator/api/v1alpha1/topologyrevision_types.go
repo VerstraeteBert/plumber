@@ -36,7 +36,7 @@ type ComposedProcessor struct {
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
-	MaxScale *int `json:"maxScale"`
+	MaxScale *int `json:"maxScale,omitempty"`
 	// +optional
 	Env []EnvVar `json:"env,omitempty"`
 	// +optional
