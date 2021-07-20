@@ -28,8 +28,8 @@ type Updater struct {
 }
 
 const (
-	ControllerRevisionManagedByLabel string = "plumber.ugent.be/managed-by"
-	ContollerRevisionNumber                 = "plumber.ugent.be/revision-number"
+	RevisionManagedByLabel string = "plumber.ugent.be/managed-by"
+	RevisionNumberLabel           = "plumber.ugent.be/revision-number"
 )
 
 func (u *Updater) handle() (reconcile.Result, error) {
@@ -379,6 +379,9 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      shared.BuildTopoRevisionName(u.topology.Name, revisionNumber),
 			Namespace: u.topology.Namespace,
+			Labels: map[string]string{
+				RevisionManagedByLabel: u.topology.GetName(),
+			},
 		},
 		Spec:   revSpec,
 		Status: plumberv1alpha1.TopologyRevisionStatus{},
