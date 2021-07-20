@@ -209,6 +209,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			if err != nil {
 				return reconcile.Result{}, err
 			}
+			u.Log.Info("got here!")
 			currentTopo := u.topology.DeepCopy()
 			currentTopo.Status.ActiveRevision = &newRevision.Spec.Revision
 			err = u.cClient.Status().Patch(context.TODO(), currentTopo, client.MergeFrom(u.topology), &client.PatchOptions{FieldManager: FieldManager})
