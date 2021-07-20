@@ -58,9 +58,9 @@ spec:
                       type: string
                     initialOffset:
                       enum:
-                      - earliest
-                      - latest
-                      - continue
+                      - Earliest
+                      - Latest
+                      - Continue
                       type: string
                     inputFrom:
                       type: string
@@ -70,8 +70,8 @@ spec:
                           type: string
                         initialOffset:
                           enum:
-                          - earliest
-                          - latest
+                          - Earliest
+                          - Latest
                           type: string
                         outputTopic:
                           properties:

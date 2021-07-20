@@ -55,9 +55,9 @@ spec:
                       type: string
                     initialOffset:
                       enum:
-                      - earliest
-                      - latest
-                      - continue
+                      - Earliest
+                      - Latest
+                      - Continue
                       type: string
                     inputFrom:
                       type: string
