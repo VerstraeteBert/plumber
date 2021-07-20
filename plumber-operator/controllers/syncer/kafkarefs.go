@@ -46,12 +46,15 @@ func buildProcessorKafkaRefs(pName string, processor plumberv1alpha1.ComposedPro
 			topic:            shared.BuildOutputTopicName(activeRev.Namespace, topoName, pName, activeRev.Spec.Revision),
 		})
 	}
-	for _, sinkBinding := range strings.Split(processor.SinkBindings, ",") {
-		outputSink, _ := activeRev.Spec.Sinks[sinkBinding]
-		kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
-			bootstrapServers: strings.Split(outputSink.Brokers, ","),
-			topic:            outputSink.Topic,
-		})
+	// check is necessary because strings.Split("", ",") will result in: [""]
+	if processor.SinkBindings != "" {
+		for _, sinkBinding := range strings.Split(processor.SinkBindings, ",") {
+			outputSink, _ := activeRev.Spec.Sinks[sinkBinding]
+			kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
+				bootstrapServers: strings.Split(outputSink.Brokers, ","),
+				topic:            outputSink.Topic,
+			})
+		}
 	}
 	return kRefs
 }

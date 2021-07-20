@@ -68,7 +68,7 @@ func generateDeployment(pName string, processor plumberv1alpha1.ComposedProcesso
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: pName,
+					Name:   pName,
 					Labels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision)},
 				},
 				Spec: corev1.PodSpec{
