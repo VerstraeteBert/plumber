@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -25,11 +26,6 @@ type RevisionHandler struct {
 	topologyPart *plumberv1alpha1.TopologyPart
 	scheme       *runtime.Scheme
 }
-
-const (
-	ControllerRevisionManagedByLabel string = "plumber.ugent.be/managed-by"
-	ContollerRevisionNumber                 = "plumber.ugent.be/revision-number"
-)
 
 func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 	// listRevisions
@@ -126,8 +122,8 @@ func createNewRevision(topologyPart *plumberv1alpha1.TopologyPart, revisionNum i
 			Name:      "topologypart" + "-" + topologyPart.Name + "-revision-" + strconv.FormatInt(revisionNum, 10),
 			Namespace: topologyPart.Namespace,
 			Labels: map[string]string{
-				ControllerRevisionManagedByLabel: topologyPart.Name,
-				ContollerRevisionNumber:          strconv.FormatInt(revisionNum, 10),
+				shared.ManagedByLabel: topologyPart.Name,
+				shared.RevisionNumber: strconv.FormatInt(revisionNum, 10),
 			},
 		},
 		Data:     runtime.RawExtension{Raw: str.Bytes()},
@@ -160,7 +156,7 @@ func (br byRevision) Swap(i, j int) {
 func (rh *RevisionHandler) listControllerRevisions() ([]*appsv1.ControllerRevision, error) {
 	// List all revisions in the namespace that match the selector
 	var revisionList = new(appsv1.ControllerRevisionList)
-	selector := labels.SelectorFromSet(labels.Set(map[string]string{ControllerRevisionManagedByLabel: rh.topologyPart.GetName()}))
+	selector := labels.SelectorFromSet(labels.Set(map[string]string{shared.ManagedByLabel: rh.topologyPart.GetName()}))
 	err := rh.cClient.List(context.TODO(), revisionList, client.InNamespace(rh.topologyPart.GetNamespace()), client.MatchingLabelsSelector{Selector: selector})
 	if err != nil {
 		return nil, err

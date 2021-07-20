@@ -1,5 +1,5 @@
 package updater
 
 const (
-	FieldManager = "updater"
+	FieldManager = "plumber-updater"
 )

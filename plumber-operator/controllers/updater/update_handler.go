@@ -3,6 +3,7 @@ package updater
 import (
 	"context"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
@@ -29,14 +30,13 @@ const (
 )
 
 func (u *Updater) handle() (reconcile.Result, error) {
-	revisionHistory, err := u.listTopologyControllerRevisions()
+	revisionHistory, err := u.listTopologyRevisions()
 	if err != nil {
 		u.Log.Error(err, "failed to list topology revisions")
 		return reconcile.Result{}, err
 	}
 	_ = u.pruneRevisions()
 	nextRevNum := getNextRevisionNumber(revisionHistory)
-	revMap := decodeRevs(revisionHistory)
 	newRevision, err := u.revisionFromTopologyWithDefaults(nextRevNum)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -47,10 +47,10 @@ func (u *Updater) handle() (reconcile.Result, error) {
 	var activeRevision *plumberv1alpha1.TopologyRevision
 	var nextRevision *plumberv1alpha1.TopologyRevision
 	if isActiveRevisionSet {
-		activeRevision, isActiveRevisionSet = revMap[*u.topology.Status.ActiveRevision]
+		activeRevision, isActiveRevisionSet = revisionHistory[*u.topology.Status.ActiveRevision]
 	}
 	if isNextRevisionSet {
-		nextRevision, isNextRevisionSet = revMap[*u.topology.Status.NextRevision]
+		nextRevision, isNextRevisionSet = revisionHistory[*u.topology.Status.NextRevision]
 	}
 	if isNextRevisionSet {
 		// next revision set, active unknown
@@ -67,7 +67,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//   1. calculate CGs keeping into account the active revision
 			// 	 2. persist new revision
 			//   3. set new revision to be next
-			//   4. requeue
+			//   4. requeue immediately
 			if newRevision.EqualRevisionSpecsSemantic(nextRevision) {
 				//goland:noinspection GoNilness
 				readyForPhaseOut, err := u.checkActiveRevisionReadyForPhaseOut(*activeRevision)
@@ -228,7 +228,7 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 			context.TODO(),
 			client.ObjectKey{
 				Namespace: activeRevision.Namespace,
-				Name:      u.topology.Name + "-" + pName + "-" + strconv.FormatInt(activeRevision.Spec.Revision, 10) + "-deploy",
+				Name:      shared.BuildProcessorDeployName(u.topology.Name, pName, activeRevision.Spec.Revision),
 			},
 			&pDeploy,
 		)
@@ -245,7 +245,7 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 			context.TODO(),
 			client.ObjectKey{
 				Namespace: activeRevision.Namespace,
-				Name:      u.topology.Name + "-" + pName + "-" + strconv.FormatInt(activeRevision.Spec.Revision, 10) + "-scaler",
+				Name:      shared.BuildScaledObjName(u.topology.Name, pName, activeRevision.Spec.Revision),
 			},
 			&pScaledObj,
 		)
@@ -263,6 +263,10 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 
 func propagateCGs(newRevision *plumberv1alpha1.TopologyRevision, activeRevision plumberv1alpha1.TopologyRevision) {
 	for nProcessorName, nProcessor := range newRevision.Spec.Processors {
+		// if supplied initialOffset != continue -> already set correctly (earliest/latest during building of revision or defaulted)
+		if nProcessor.InitialOffset != shared.OffsetContinue {
+			continue
+		}
 		// if both in active and new revision, the same processor (name) refers to the same source (name) -> take over CGs
 		if _, nIsSourceRef := newRevision.Spec.Sources[nProcessor.InputFrom]; nIsSourceRef {
 			if aProcessor, aProcessorExists := activeRevision.Spec.Processors[nProcessorName]; aProcessorExists {
@@ -284,6 +288,9 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 		Processors: make(map[string]plumberv1alpha1.ComposedProcessor),
 		Revision:   revisionNumber,
 	}
+	// helper structure to determine partitions needed for outputTopics
+	connectedProcessorsMaxScale := make(map[string]int)
+	// combine information from all referenced topologyparts
 	for _, topoPartRef := range u.topology.Spec.Parts {
 		var topoPart plumberv1alpha1.TopologyPart
 		err := u.cClient.Get(context.TODO(),
@@ -303,16 +310,52 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 		for name, sink := range topoPart.Spec.Sinks {
 			revSpec.Sinks[name] = sink
 		}
+		// InternalProcDetails
+		// initialOffset
+		//		default: if connected to processor -> earliest
+		//				 if connected to source -> respect supplied initialOffset value if it is not set or "continue" -> latest
+		// consumerGroup
+		//		set default here
+		//		later pass which takes into account the active revision may overwrite this if initialOffset == "continue"
+		// outputTopic:
+		//		first detect if it is needed: if any processor takes input from it
+		//				if so: identify largest MaxScale of an immediate successor processor as the number of partitions (using connectedProcessorScales as a helper datastructure)
 		for name, proc := range topoPart.Spec.Processors {
+			initialOffset := proc.InitialOffset
+			if _, takesInputFromSource := revSpec.Sources[proc.InputFrom]; takesInputFromSource {
+				if proc.InitialOffset == "" || proc.InitialOffset == shared.OffsetContinue {
+					initialOffset = shared.OffsetLatest
+				}
+			} else {
+				// takes input from processor
+				initialOffset = shared.OffsetEarliest
+				// partition calcs
+				procMaxScale := proc.GetMaxScaleOrDefault()
+				if currMaxMaxScale, found := connectedProcessorsMaxScale[proc.InputFrom]; found {
+					connectedProcessorsMaxScale[proc.InputFrom] = shared.MaxInt(currMaxMaxScale, procMaxScale)
+				} else {
+					connectedProcessorsMaxScale[proc.InputFrom] = procMaxScale
+				}
+			}
 			revSpec.Processors[name] = plumberv1alpha1.ComposedProcessor{
-				InputFrom:     proc.InputFrom,
-				Image:         proc.Image,
-				MaxScale:      proc.MaxScale,
-				Env:           proc.Env,
-				SinkBindings:  proc.SinkBindings,
-				ConsumerGroup: u.topology.Namespace + "-" + u.topology.Name + "-" + name + "-" + strconv.FormatInt(revisionNumber, 10),
+				InputFrom:    proc.InputFrom,
+				Image:        proc.Image,
+				MaxScale:     proc.MaxScale,
+				Env:          proc.Env,
+				SinkBindings: proc.SinkBindings,
+				Internal: plumberv1alpha1.InternalProcDetails{
+					ConsumerGroup: u.topology.Namespace + "-" + u.topology.Name + "-" + name + "-" + strconv.FormatInt(revisionNumber, 10),
+					InitialOffset: initialOffset,
+				},
 			}
 		}
+	}
+	for pName, reqOutPartitions := range connectedProcessorsMaxScale {
+		procObj, _ := revSpec.Processors[pName]
+		procObj.Internal.OutputTopic = &plumberv1alpha1.InternalTopic{
+			Partitions: reqOutPartitions,
+		}
+		revSpec.Processors[pName] = procObj
 	}
 	return plumberv1alpha1.TopologyRevision{
 		TypeMeta: metav1.TypeMeta{

@@ -13,7 +13,21 @@ type TopologyRevisionSpec struct {
 	Sinks map[string]Sink `json:"sinks,omitempty"`
 	// +optional
 	Processors map[string]ComposedProcessor `json:"processors,omitempty"`
-	Revision   int64
+	// +optional
+	DefaultScale *int `json:"defaultScale,omitempty"`
+	Revision     int64
+}
+
+type InternalTopic struct {
+	Partitions int `json:"partitions"`
+}
+
+type InternalProcDetails struct {
+	// +kubebuilder:validation:Enum=earliest;latest
+	InitialOffset string `json:"initialOffset"`
+	ConsumerGroup string `json:"consumerGroup"`
+	// +optional
+	OutputTopic *InternalTopic `json:"outputTopic"`
 }
 
 type ComposedProcessor struct {
@@ -23,11 +37,15 @@ type ComposedProcessor struct {
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
-	MaxScale int `json:"maxScale"`
+	MaxScale *int `json:"maxScale"`
 	// +optional
 	Env []EnvVar `json:"env,omitempty"`
 	// +optional
 	SinkBindings string `json:"sinkBindings,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Enum=earliest;latest;continue
+	InitialOffset string              `json:"initialOffset,omitempty"`
+	Internal      InternalProcDetails `json:"internal"`
 }
 
 // TopologyRevisionStatus defines the observed state of a TopologyRevision, currently not used anywhere
@@ -56,16 +74,27 @@ func (a *TopologyRevision) EqualRevisionSpecsSemantic(b *TopologyRevision) bool 
 	revACopy := a.Spec.DeepCopy()
 	revBCopy := b.Spec.DeepCopy()
 	for k, p := range revACopy.Processors {
-		p.ConsumerGroup = ""
+		p.Internal = InternalProcDetails{}
 		revACopy.Processors[k] = p
 	}
 	for k, p := range revBCopy.Processors {
-		p.ConsumerGroup = ""
+		p.Internal = InternalProcDetails{}
 		revACopy.Processors[k] = p
 	}
 	revACopy.Revision = 0
 	revBCopy.Revision = 0
 	return reflect.DeepEqual(revACopy, revBCopy)
+}
+
+func (cp *ComposedProcessor) HasOutputTopic() bool {
+	return cp.Internal.OutputTopic != nil
+}
+
+func (cp *ComposedProcessor) getMaxScaleOrDefault() int {
+	if cp.MaxScale == nil {
+		return 5
+	}
+	return *cp.MaxScale
 }
 
 func init() {
