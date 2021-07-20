@@ -2,6 +2,7 @@ package syncer
 
 import (
 	"context"
+	"fmt"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
@@ -77,6 +78,7 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		},
 		&topoRev,
 	)
+	r.Log.Info(fmt.Sprintf("%s : %s",  shared.BuildTopoRevisionName(topo.Name, *topo.Status.ActiveRevision), topo.Namespace))
 	if err != nil {
 		if kerrors.IsNotFound(err) {
 			// not found: must be deleted.
