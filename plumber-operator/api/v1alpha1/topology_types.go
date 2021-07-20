@@ -43,11 +43,14 @@ type TopologySpec struct {
 // TopologyStatus defines the observed state of Topology
 type TopologyStatus struct {
 	// ActiveRevision is the TopologyRevision ID that is currently active, i.e. actively processing messages end-to-end
-	ActiveRevision *int64 `json:"activeRevision"`
+	// +optional
+	ActiveRevision *int64 `json:"activeRevision,omitempty"`
 	// NextRevision holds the TopologyRevision ID that is queued up to become the ActiveRevision
-	NextRevision *int64 `json:"nextRevision"`
+	// +optional
+	NextRevision *int64 `json:"nextRevision,omitempty"`
 	// PhasingOutRevisions hold a list of TopologyRevision IDs that are currently being phased-out, i.e. processing any left-over messages
-	PhasingOutRevisions []*int64 `json:"phasingOutRevisions"`
+	// +optional
+	PhasingOutRevisions []*int64 `json:"phasingOutRevisions,omitempty"`
 	// Status contains the last observed status of the overall Topology
 	// +optional
 	Status []metav1.Condition `json:"topoconds"`
