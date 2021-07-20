@@ -72,7 +72,7 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	var topoRev plumberv1alpha1.TopologyRevision
 	err := r.Client.Get(ctx,
 		types.NamespacedName{
-			Name:      shared.BuildTopoControllerRevisionName(topo.Name, *topo.Status.ActiveRevision),
+			Name:      shared.BuildTopoRevisionName(topo.Name, *topo.Status.ActiveRevision),
 			Namespace: topo.Namespace,
 		},
 		&topoRev,

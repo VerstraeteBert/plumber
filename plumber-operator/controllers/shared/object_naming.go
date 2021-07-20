@@ -2,7 +2,7 @@ package shared
 
 import "strconv"
 
-func BuildTopoControllerRevisionName(topoName string, revisionNum int64) string {
+func BuildTopoRevisionName(topoName string, revisionNum int64) string {
 	return "topology-" + topoName + "-revision-" + strconv.FormatInt(revisionNum, 10)
 }
 

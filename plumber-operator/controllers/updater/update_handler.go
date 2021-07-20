@@ -371,7 +371,7 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 			APIVersion: plumberv1alpha1.GroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      u.topology.Name,
+			Name:      shared.BuildTopoRevisionName(u.topology.Name, revisionNumber),
 			Namespace: u.topology.Namespace,
 		},
 		Spec:   revSpec,
