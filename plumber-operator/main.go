@@ -105,7 +105,7 @@ func main() {
 
 	if err = (&topologypart_revisions.TopologyPartReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("updater").WithName("TopologyPartRevisionHandler"),
+		Log:    ctrl.Log.WithName("plumber").WithName("TopologyPartRevisionHandler"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TopologyPartRevisionHandler")

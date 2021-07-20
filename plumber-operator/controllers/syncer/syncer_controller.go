@@ -42,7 +42,6 @@ func syncerUpdaterFilters() predicate.Predicate {
 func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&plumberv1alpha1.Topology{}).
-		For(&plumberv1alpha1.Topology{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
 		WithEventFilter(syncerUpdaterFilters()).
