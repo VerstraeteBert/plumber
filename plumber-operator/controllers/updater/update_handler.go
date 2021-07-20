@@ -32,7 +32,7 @@ const (
 )
 
 func (u *Updater) handle() (reconcile.Result, error) {
-	shared.Elapsed(u.Log, "updater loop")()
+	defer shared.Elapsed(u.Log, "updater loop")()
 	revisionHistory, err := u.listTopologyRevisions()
 	if err != nil {
 		u.Log.Error(err, "failed to list topology revisions")
