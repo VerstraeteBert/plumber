@@ -32,7 +32,7 @@ const (
 )
 
 func (u *Updater) handle() (reconcile.Result, error) {
-	shared.Elapsed(u.Log, "updater loop")
+	shared.Elapsed(u.Log, "updater loop")()
 	revisionHistory, err := u.listTopologyRevisions()
 	if err != nil {
 		u.Log.Error(err, "failed to list topology revisions")
@@ -50,9 +50,11 @@ func (u *Updater) handle() (reconcile.Result, error) {
 	var activeRevision *plumberv1alpha1.TopologyRevision
 	var nextRevision *plumberv1alpha1.TopologyRevision
 	if isActiveRevisionSet {
+		u.Log.Info("active revision set")
 		activeRevision, isActiveRevisionSet = revisionHistory[*u.topology.Status.ActiveRevision]
 	}
 	if isNextRevisionSet {
+		u.Log.Info("next revision set")
 		nextRevision, isNextRevisionSet = revisionHistory[*u.topology.Status.NextRevision]
 	}
 	if isNextRevisionSet {
