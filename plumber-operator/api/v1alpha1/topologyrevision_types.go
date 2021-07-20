@@ -14,7 +14,7 @@ type TopologyRevisionSpec struct {
 	// +optional
 	Processors map[string]ComposedProcessor `json:"processors,omitempty"`
 	// +optional
-	DefaultScale *int `json:"defaultScale,omitempty"`
+	DefaultScale *int  `json:"defaultScale,omitempty"`
 	Revision     int64 `json:"revision"`
 }
 
@@ -31,9 +31,8 @@ type InternalProcDetails struct {
 }
 
 type ComposedProcessor struct {
-	InputFrom     string `json:"inputFrom"`
-	Image         string `json:"image"`
-	ConsumerGroup string `json:"consumerGroup"`
+	InputFrom string `json:"inputFrom"`
+	Image     string `json:"image"`
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100

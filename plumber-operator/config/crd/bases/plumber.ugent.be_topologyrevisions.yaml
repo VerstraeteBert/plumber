@@ -42,8 +42,6 @@ spec:
               processors:
                 additionalProperties:
                   properties:
-                    consumerGroup:
-                      type: string
                     env:
                       items:
                         properties:
@@ -94,7 +92,6 @@ spec:
                     sinkBindings:
                       type: string
                   required:
-                  - consumerGroup
                   - image
                   - inputFrom
                   - internal

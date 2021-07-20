@@ -272,7 +272,7 @@ func propagateCGs(newRevision *plumberv1alpha1.TopologyRevision, activeRevision 
 			if aProcessor, aProcessorExists := activeRevision.Spec.Processors[nProcessorName]; aProcessorExists {
 				if _, aIsSourceRef := activeRevision.Spec.Sources[aProcessor.InputFrom]; aIsSourceRef {
 					// take over CG
-					nProcessor.ConsumerGroup = aProcessor.ConsumerGroup
+					nProcessor.Internal.ConsumerGroup = aProcessor.Internal.ConsumerGroup
 					newRevision.Spec.Processors[nProcessorName] = nProcessor
 				}
 			}
