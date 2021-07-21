@@ -270,7 +270,7 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 				return false, errors.Wrap(err, "failed to get scaledobject when checking phaseout readiness")
 			}
 		} else {
-			// deploy found; possibly finalizing -> requeue
+			// scaledobj found; possibly finalizing -> requeue
 			return false, nil
 		}
 	}
@@ -365,6 +365,7 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 				MaxScale:     proc.MaxScale,
 				Env:          proc.Env,
 				SinkBindings: proc.SinkBindings,
+				InitialOffset: proc.InitialOffset,
 				Internal: plumberv1alpha1.InternalProcDetails{
 					ConsumerGroup: u.topology.Namespace + "-" + u.topology.Name + "-" + name + "-" + strconv.FormatInt(revisionNumber, 10),
 					InitialOffset: initialOffset,
