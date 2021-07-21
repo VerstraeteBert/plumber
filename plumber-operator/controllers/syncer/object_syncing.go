@@ -65,7 +65,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 			r.Log.Info("Next revision is nil")
 		}
 		if _, takesInputFromSource := activeRev.Spec.Sources[proc.InputFrom]; takesInputFromSource && topo.Status.NextRevision != nil {
-			r.Log.Info(fmt.Sprintf("Next revision is %d", topo.Status.NextRevision))
+			r.Log.Info(fmt.Sprintf("Next revision is %d", *topo.Status.NextRevision))
 			var deployToDelete appsv1.Deployment
 			err := r.Client.Get(context.TODO(), client.ObjectKey{
 				Namespace: topo.GetNamespace(),
@@ -75,6 +75,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 				if !kerrors.IsNotFound(err) {
 					return errors.Wrap(err,"failed to fetch deployment of source connected processor")
 				}
+				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision)))
 				err := r.Client.Delete(context.TODO(), &deployToDelete)
 				if err != nil && !kerrors.IsNotFound(err) {
 					return errors.Wrap(err,"failed to delete deployment of source connected processor")
@@ -89,6 +90,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 				if !kerrors.IsNotFound(err) {
 					return errors.Wrap(err,"failed to fetch scaledobject of source connected processor")
 				}
+				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision)))
 				err := r.Client.Delete(context.TODO(), &scaledObjToDelete)
 				if err != nil && !kerrors.IsNotFound(err) {
 					return errors.Wrap(err,"failed to delete scaledobject of source connected processor")
