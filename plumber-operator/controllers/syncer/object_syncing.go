@@ -75,6 +75,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 				if !kerrors.IsNotFound(err) {
 					return errors.Wrap(err,"failed to fetch deployment of source connected processor")
 				}
+			} else {
 				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision)))
 				err := r.Client.Delete(context.TODO(), &deployToDelete)
 				if err != nil && !kerrors.IsNotFound(err) {
@@ -90,6 +91,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 				if !kerrors.IsNotFound(err) {
 					return errors.Wrap(err,"failed to fetch scaledobject of source connected processor")
 				}
+			} else {
 				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision)))
 				err := r.Client.Delete(context.TODO(), &scaledObjToDelete)
 				if err != nil && !kerrors.IsNotFound(err) {
