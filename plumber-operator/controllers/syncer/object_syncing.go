@@ -65,7 +65,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 			r.Log.Info("Next revision is nil")
 		}
 		if _, takesInputFromSource := activeRev.Spec.Sources[proc.InputFrom]; takesInputFromSource && topo.Status.NextRevision != nil {
-			r.Log.Info("Next revision is %d", topo.Status.NextRevision)
+			r.Log.Info(fmt.Sprintf("Next revision is %d", topo.Status.NextRevision))
 			var deployToDelete appsv1.Deployment
 			err := r.Client.Get(context.TODO(), client.ObjectKey{
 				Namespace: topo.GetNamespace(),
