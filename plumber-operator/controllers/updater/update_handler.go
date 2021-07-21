@@ -75,7 +75,8 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			// 	 2. persist new revision
 			//   3. set new revision to be next
 			//   4. requeue immediately
-			if newRevision.SemanticallyEqual(*nextRevision) {
+			if //goland:noinspection GoNilness
+			newRevision.SemanticallyEqual(*nextRevision) {
 				//goland:noinspection GoNilness
 				readyForPhaseOut, err := u.checkActiveRevisionReadyForPhaseOut(*activeRevision)
 				if err != nil {
@@ -130,7 +131,8 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//   persist new revision
 			//   unset next, set new to active
 			//   done
-			if newRevision.SemanticallyEqual(*nextRevision) {
+			if //goland:noinspection GoNilness
+			newRevision.SemanticallyEqual(*nextRevision) {
 				currentTopo := u.topology.DeepCopy()
 				currentTopo.Status.ActiveRevision = currentTopo.Status.NextRevision
 				currentTopo.Status.NextRevision = nil
@@ -175,7 +177,8 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//  2. persist new revision
 			//  3. set new revision to be next
 			//  4. requeue after 10 -> branch where active and next are set will be taken
-			if newRevision.SemanticallyEqual(*activeRevision) {
+			if //goland:noinspection GoNilness
+			newRevision.SemanticallyEqual(*activeRevision) {
 				u.Log.Info("revisions are equal!")
 				return reconcile.Result{}, nil
 			}
@@ -230,7 +233,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 // checkActiveRevisionReadyForPhaseOut checks if a revision is ready for phasing out
 // this condition is met if all deployments & scaledobjects of these processors are deleted
 func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1alpha1.TopologyRevision) (bool, error) {
-	for pName, _ := range activeRevision.Spec.Processors {
+	for pName := range activeRevision.Spec.Processors {
 		var pDeploy appsv1.Deployment
 		err := u.cClient.Get(
 			context.TODO(),

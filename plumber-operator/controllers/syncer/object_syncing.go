@@ -6,7 +6,9 @@ import (
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
+	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -57,9 +59,37 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 		}
 	}
 	for pName, proc := range activeRev.Spec.Processors {
-		// generate and
+		// generate scaledobject / deployment per processor
+		// important: if a NextRevision is set, any deployment/scaledobject of a processor connected to a source must be deleted to prepare for phase-out
 		if _, takesInputFromSource := activeRev.Spec.Sources[proc.InputFrom]; takesInputFromSource && topo.Status.NextRevision != nil {
-			continue
+			var deployToDelete appsv1.Deployment
+			err := r.Client.Get(context.TODO(), client.ObjectKey{
+				Namespace: topo.GetNamespace(),
+				Name: shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision),
+			}, &deployToDelete)
+			if err != nil {
+				if !kerrors.IsNotFound(err) {
+					return errors.Wrap(err,"failed to fetch deployment of source connected processor")
+				}
+				err := r.Client.Delete(context.TODO(), &deployToDelete)
+				if err != nil && !kerrors.IsNotFound(err) {
+					return errors.Wrap(err,"failed to delete deployment of source connected processor")
+				}
+			}
+			var scaledObjToDelete kedav1alpha1.ScaledObject
+			err = r.Client.Get(context.TODO(), client.ObjectKey{
+				Namespace: topo.GetNamespace(),
+				Name: shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision),
+			}, &scaledObjToDelete)
+			if err != nil {
+				if !kerrors.IsNotFound(err) {
+					return errors.Wrap(err,"failed to fetch scaledobject of source connected processor")
+				}
+				err := r.Client.Delete(context.TODO(), &scaledObjToDelete)
+				if err != nil && !kerrors.IsNotFound(err) {
+					return errors.Wrap(err,"failed to delete scaledobject of source connected processor")
+				}
+			}
 		} else {
 			procKRefs := buildProcessorKafkaRefs(pName, proc, activeRev, topo.Name)
 			sidecarConfig := buildSidecarConfig(pName, procKRefs, activeRev)
