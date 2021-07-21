@@ -234,6 +234,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 // this condition is met if all deployments & scaledobjects of these processors are deleted
 func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1alpha1.TopologyRevision) (bool, error) {
 	for pName := range activeRevision.Spec.Processors {
+		deployDeleted := false
 		var pDeploy appsv1.Deployment
 		err := u.cClient.Get(
 			context.TODO(),
@@ -244,11 +245,13 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 			&pDeploy,
 		)
 		if err != nil {
-			if !kerrors.IsNotFound(err) {
-				return false, err
+			if kerrors.IsNotFound(err) {
+				deployDeleted = true
+			} else {
+				return false, errors.Wrap(err, "failed to get deployment when checking phaseout readiness")
 			}
-		} else {
-			// deploy found; possibly finalizing -> requeue
+		}
+		if !deployDeleted {
 			return false, nil
 		}
 		var pScaledObj kedav1alpha1.ScaledObject
@@ -261,8 +264,10 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 			&pScaledObj,
 		)
 		if err != nil {
-			if !kerrors.IsNotFound(err) {
-				return false, err
+			if kerrors.IsNotFound(err) {
+				return true, nil
+			} else {
+				return false, errors.Wrap(err, "failed to get scaledobject when checking phaseout readiness")
 			}
 		} else {
 			// deploy found; possibly finalizing -> requeue
