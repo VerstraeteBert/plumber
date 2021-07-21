@@ -137,7 +137,7 @@ func generateScaledObject(processor plumberv1alpha1.ComposedProcessor, namespace
 						"topic":            refs.inputRef.topic,
 						"bootstrapServers": strings.Join(refs.inputRef.bootstrapServers, ","),
 						"consumerGroup":    refs.inputRef.consumerGroup,
-						"lagThreshold":     "5",
+						"lagThreshold":     "50",
 					},
 				},
 			},
