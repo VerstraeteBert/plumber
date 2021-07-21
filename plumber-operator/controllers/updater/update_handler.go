@@ -280,7 +280,7 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 func propagateCGs(newRevision *plumberv1alpha1.TopologyRevision, activeRevision plumberv1alpha1.TopologyRevision) {
 	for nProcessorName, nProcessor := range newRevision.Spec.Processors {
 		// if supplied initialOffset != continue -> already set correctly (earliest/latest during building of revision or defaulted)
-		if nProcessor.InitialOffset != shared.OffsetContinue {
+		if nProcessor.InitialOffset != shared.OffsetContinue && nProcessor.InitialOffset != "" {
 			continue
 		}
 		// if both in active and new revision, the same processor (name) refers to the same source (name) -> take over CGs
