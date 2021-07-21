@@ -44,6 +44,7 @@ func syncerUpdaterFilters() predicate.Predicate {
 func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&plumberv1alpha1.Topology{}).
+		For(&plumberv1alpha1.TopologyRevision{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
 		//WithEventFilter(syncerUpdaterFilters()).
@@ -54,7 +55,7 @@ func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/finalizers,verbs=update
 func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	defer shared.Elapsed(r.Log, "Reconciliation")()
+	defer shared.Elapsed(r.Log, "Syncing")()
 	// 1. get composition object:
 	var topo plumberv1alpha1.Topology
 	if err := r.Get(ctx, req.NamespacedName, &topo); err != nil {

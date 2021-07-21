@@ -22,6 +22,7 @@ import (
 	"github.com/VerstraeteBert/plumber-operator/controllers/topologypart_revisions"
 	"github.com/VerstraeteBert/plumber-operator/controllers/updater"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 
@@ -71,6 +72,7 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -79,6 +81,7 @@ func main() {
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "2dc3023f.ugent.be",
 		Namespace:              "", // Watch all namespaces for now
+		ClientDisableCacheFor: ,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -104,7 +107,7 @@ func main() {
 	}
 
 	if err = (&topologypart_revisions.TopologyPartReconciler{
-		Client: mgr.GetClient(),
+		Client: client.New(),
 		Log:    ctrl.Log.WithName("plumber").WithName("TopologyPartRevisionHandler"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
