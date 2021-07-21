@@ -44,7 +44,6 @@ func syncerUpdaterFilters() predicate.Predicate {
 func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&plumberv1alpha1.Topology{}).
-		For(&plumberv1alpha1.TopologyRevision{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
 		//WithEventFilter(syncerUpdaterFilters()).
@@ -56,6 +55,7 @@ func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/finalizers,verbs=update
 func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	defer shared.Elapsed(r.Log, "Syncing")()
+	r.Log.Info("starting syncer")
 	// 1. get composition object:
 	var topo plumberv1alpha1.Topology
 	if err := r.Get(ctx, req.NamespacedName, &topo); err != nil {
@@ -68,9 +68,12 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	// 2. Fetch active TopologyRevision
 	// if no activeRevision is set -> stop
+
 	if topo.Status.ActiveRevision == nil {
+		r.Log.Info("Active revision is nil")
 		return ctrl.Result{}, nil
 	}
+	r.Log.Info("Active revision is not nil")
 	var topoRev plumberv1alpha1.TopologyRevision
 	err := r.Client.Get(ctx,
 		types.NamespacedName{
@@ -86,6 +89,7 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 		return ctrl.Result{}, err
 	}
+
 
 	// 3. patch processors
 	err = r.reconcileProcessors(topo, topoRev)

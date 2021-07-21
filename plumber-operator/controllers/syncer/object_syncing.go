@@ -61,7 +61,11 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 	for pName, proc := range activeRev.Spec.Processors {
 		// generate scaledobject / deployment per processor
 		// important: if a NextRevision is set, any deployment/scaledobject of a processor connected to a source must be deleted to prepare for phase-out
+		if topo.Status.NextRevision == nil {
+			r.Log.Info("Next revision is nil")
+		}
 		if _, takesInputFromSource := activeRev.Spec.Sources[proc.InputFrom]; takesInputFromSource && topo.Status.NextRevision != nil {
+			r.Log.Info("Next revision is %d", topo.Status.NextRevision)
 			var deployToDelete appsv1.Deployment
 			err := r.Client.Get(context.TODO(), client.ObjectKey{
 				Namespace: topo.GetNamespace(),
