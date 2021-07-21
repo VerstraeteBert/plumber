@@ -23,6 +23,7 @@ import (
 	"github.com/VerstraeteBert/plumber-operator/controllers/updater"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -84,10 +85,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	uClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: mgr.GetScheme()})
+	if err != nil {
+		setupLog.Error(err, "failed to create uncached client")
+	}
 	if err = (&syncer.TopologyReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("plumber").WithName("Syncer"),
-		Scheme: mgr.GetScheme(),
+		Client:  mgr.GetClient(),
+		Log:     ctrl.Log.WithName("plumber").WithName("Syncer"),
+		Scheme:  mgr.GetScheme(),
+		UClient: uClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Syncer")
 		os.Exit(1)

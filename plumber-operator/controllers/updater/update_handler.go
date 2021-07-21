@@ -360,11 +360,11 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 				}
 			}
 			revSpec.Processors[name] = plumberv1alpha1.ComposedProcessor{
-				InputFrom:    proc.InputFrom,
-				Image:        proc.Image,
-				MaxScale:     proc.MaxScale,
-				Env:          proc.Env,
-				SinkBindings: proc.SinkBindings,
+				InputFrom:     proc.InputFrom,
+				Image:         proc.Image,
+				MaxScale:      proc.MaxScale,
+				Env:           proc.Env,
+				SinkBindings:  proc.SinkBindings,
 				InitialOffset: proc.InitialOffset,
 				Internal: plumberv1alpha1.InternalProcDetails{
 					ConsumerGroup: u.topology.Namespace + "-" + u.topology.Name + "-" + name + "-" + strconv.FormatInt(revisionNumber, 10),

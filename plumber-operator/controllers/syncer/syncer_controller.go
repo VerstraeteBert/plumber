@@ -21,8 +21,9 @@ import (
 // TopologyReconciler reconciles a Topology object
 type TopologyReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log     logr.Logger
+	Scheme  *runtime.Scheme
+	UClient client.Client
 }
 
 func syncerUpdaterFilters() predicate.Predicate {
@@ -46,7 +47,7 @@ func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&plumberv1alpha1.Topology{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
-		//WithEventFilter(syncerUpdaterFilters()).
+		WithEventFilter(syncerUpdaterFilters()).
 		Complete(r)
 }
 
