@@ -46,7 +46,7 @@ func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&plumberv1alpha1.Topology{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
-		WithEventFilter(syncerUpdaterFilters()).
+		//WithEventFilter(syncerUpdaterFilters()).
 		Complete(r)
 }
 
