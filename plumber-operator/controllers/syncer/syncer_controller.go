@@ -90,7 +90,6 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, err
 	}
 
-
 	// 3. patch processors
 	err = r.reconcileProcessors(topo, topoRev)
 	if err != nil {

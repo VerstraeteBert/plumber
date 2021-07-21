@@ -69,33 +69,33 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 			var deployToDelete appsv1.Deployment
 			err := r.Client.Get(context.TODO(), client.ObjectKey{
 				Namespace: topo.GetNamespace(),
-				Name: shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision),
+				Name:      shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision),
 			}, &deployToDelete)
 			if err != nil {
 				if !kerrors.IsNotFound(err) {
-					return errors.Wrap(err,"failed to fetch deployment of source connected processor")
+					return errors.Wrap(err, "failed to fetch deployment of source connected processor")
 				}
 			} else {
 				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision)))
 				err := r.Client.Delete(context.TODO(), &deployToDelete)
 				if err != nil && !kerrors.IsNotFound(err) {
-					return errors.Wrap(err,"failed to delete deployment of source connected processor")
+					return errors.Wrap(err, "failed to delete deployment of source connected processor")
 				}
 			}
 			var scaledObjToDelete kedav1alpha1.ScaledObject
 			err = r.Client.Get(context.TODO(), client.ObjectKey{
 				Namespace: topo.GetNamespace(),
-				Name: shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision),
+				Name:      shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision),
 			}, &scaledObjToDelete)
 			if err != nil {
 				if !kerrors.IsNotFound(err) {
-					return errors.Wrap(err,"failed to fetch scaledobject of source connected processor")
+					return errors.Wrap(err, "failed to fetch scaledobject of source connected processor")
 				}
 			} else {
 				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision)))
 				err := r.Client.Delete(context.TODO(), &scaledObjToDelete)
 				if err != nil && !kerrors.IsNotFound(err) {
-					return errors.Wrap(err,"failed to delete scaledobject of source connected processor")
+					return errors.Wrap(err, "failed to delete scaledobject of source connected processor")
 				}
 			}
 		} else {
