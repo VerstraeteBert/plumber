@@ -67,7 +67,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 		if _, takesInputFromSource := activeRev.Spec.Sources[proc.InputFrom]; takesInputFromSource && topo.Status.NextRevision != nil {
 			r.Log.Info(fmt.Sprintf("Next revision is %d", *topo.Status.NextRevision))
 			var deployToDelete appsv1.Deployment
-			err := r.UClient.Get(context.TODO(), client.ObjectKey{
+			err := r.Client.Get(context.TODO(), client.ObjectKey{
 				Namespace: topo.GetNamespace(),
 				Name:      shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision),
 			}, &deployToDelete)
@@ -83,7 +83,7 @@ func (r *TopologyReconciler) reconcileProcessors(topo plumberv1alpha1.Topology, 
 				}
 			}
 			var scaledObjToDelete kedav1alpha1.ScaledObject
-			err = r.UClient.Get(context.TODO(), client.ObjectKey{
+			err = r.Client.Get(context.TODO(), client.ObjectKey{
 				Namespace: topo.GetNamespace(),
 				Name:      shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision),
 			}, &scaledObjToDelete)

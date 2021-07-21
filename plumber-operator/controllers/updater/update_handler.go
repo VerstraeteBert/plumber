@@ -25,6 +25,7 @@ type Updater struct {
 	Log      logr.Logger
 	topology *plumberv1alpha1.Topology
 	scheme   *runtime.Scheme
+	uClient  client.Client
 }
 
 const (
@@ -236,7 +237,7 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 	for pName := range activeRevision.Spec.Processors {
 		deployDeleted := false
 		var pDeploy appsv1.Deployment
-		err := u.cClient.Get(
+		err := u.uClient.Get(
 			context.TODO(),
 			client.ObjectKey{
 				Namespace: activeRevision.Namespace,
@@ -255,7 +256,7 @@ func (u *Updater) checkActiveRevisionReadyForPhaseOut(activeRevision plumberv1al
 			return false, nil
 		}
 		var pScaledObj kedav1alpha1.ScaledObject
-		err = u.cClient.Get(
+		err = u.uClient.Get(
 			context.TODO(),
 			client.ObjectKey{
 				Namespace: activeRevision.Namespace,

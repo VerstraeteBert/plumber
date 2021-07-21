@@ -85,24 +85,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	uClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: mgr.GetScheme()})
-	if err != nil {
-		setupLog.Error(err, "failed to create uncached client")
-	}
 	if err = (&syncer.TopologyReconciler{
-		Client:  mgr.GetClient(),
-		Log:     ctrl.Log.WithName("plumber").WithName("Syncer"),
-		Scheme:  mgr.GetScheme(),
-		UClient: uClient,
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("plumber").WithName("Syncer"),
+		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Syncer")
 		os.Exit(1)
 	}
 
+	uClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: mgr.GetScheme()})
+	if err != nil {
+		setupLog.Error(err, "failed to create uncached client")
+	}
 	if err = (&updater.UpdaterReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("plumber").WithName("Updater"),
-		Scheme: mgr.GetScheme(),
+		Client:  mgr.GetClient(),
+		Log:     ctrl.Log.WithName("plumber").WithName("Updater"),
+		Scheme:  mgr.GetScheme(),
+		UClient: uClient,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Updater")
 		os.Exit(1)

@@ -21,9 +21,8 @@ import (
 // TopologyReconciler reconciles a Topology object
 type TopologyReconciler struct {
 	client.Client
-	Log     logr.Logger
-	Scheme  *runtime.Scheme
-	UClient client.Client
+	Log    logr.Logger
+	Scheme *runtime.Scheme
 }
 
 func syncerUpdaterFilters() predicate.Predicate {

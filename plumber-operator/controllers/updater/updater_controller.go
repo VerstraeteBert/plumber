@@ -16,8 +16,9 @@ import (
 // Updater reconciles a Topology object
 type UpdaterReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log     logr.Logger
+	Scheme  *runtime.Scheme
+	UClient client.Client
 }
 
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topologies,verbs=get;list;watch;create;update;patch;delete
@@ -41,6 +42,7 @@ func (u *UpdaterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		topology: &crdTopo,
 		scheme:   u.Scheme,
 		Log:      logger,
+		uClient:  u.UClient,
 	}
 	return rvh.handle()
 }
