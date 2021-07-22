@@ -24,7 +24,7 @@ func getInt32Pointer(base int32) *int32 {
 	return &val
 }
 
-func generateOutputTopic(processor plumberv1alpha1.ComposedProcessor, pName string, activeRev plumberv1alpha1.TopologyRevision, topoName string) strimziv1beta1.KafkaTopic {
+func (sh *syncerHandler) generateOutputTopic(pName string, processor plumberv1alpha1.ComposedProcessor) strimziv1beta1.KafkaTopic {
 	desiredKfkTopic := strimziv1beta1.KafkaTopic{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "KafkaTopic",
@@ -32,7 +32,7 @@ func generateOutputTopic(processor plumberv1alpha1.ComposedProcessor, pName stri
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			// TODO topicName is redundant
-			Name:      shared.BuildOutputTopicName(activeRev.Namespace, topoName, pName, activeRev.Spec.Revision),
+			Name:      shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			Namespace: "plumber-kafka",
 			Labels: map[string]string{
 				"strimzi.io/cluster": "plumber-cluster",
@@ -51,7 +51,7 @@ const (
 	LabelProcessor = "plumber.ugent.be/processor-name"
 )
 
-func generateDeployment(pName string, processor plumberv1alpha1.ComposedProcessor, topoName string, topoRev plumberv1alpha1.TopologyRevision, sidecarConf SidecarConfig) appsv1.Deployment {
+func (sh *syncerHandler) generateDeployment(pName string, processor plumberv1alpha1.ComposedProcessor, sidecarConf SidecarConfig) appsv1.Deployment {
 	jsonConfmap, _ := json.Marshal(sidecarConf)
 	desiredDeployment := appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -59,17 +59,17 @@ func generateDeployment(pName string, processor plumberv1alpha1.ComposedProcesso
 			Kind:       "Deployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision),
-			Namespace: topoRev.Namespace,
+			Name:      shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
+			Namespace: sh.activeRevision.GetNamespace(),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision)},
+				MatchLabels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision)},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:   pName,
-					Labels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision)},
+					Labels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision)},
 				},
 				Spec: corev1.PodSpec{
 					// TODO readinessprobe / liveness probes ? both in SDK and Sidecar?
@@ -101,20 +101,20 @@ func generateDeployment(pName string, processor plumberv1alpha1.ComposedProcesso
 	return desiredDeployment
 }
 
-func generateScaledObject(processor plumberv1alpha1.ComposedProcessor, namespace string, pName string, topoName string, revNum int64, refs processorKafkaRefs) kedav1alpha1.ScaledObject {
+func (sh *syncerHandler) generateScaledObject(pName string, processor plumberv1alpha1.ComposedProcessor, refs processorKafkaRefs) kedav1alpha1.ScaledObject {
 	scaledObj := kedav1alpha1.ScaledObject{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: kedav1alpha1.SchemeGroupVersion.String(),
 			Kind:       "ScaledObject",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      shared.BuildScaledObjName(topoName, pName, revNum),
-			Namespace: namespace,
+			Name:      shared.BuildScaledObjName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
+			Namespace: sh.activeRevision.GetNamespace(),
 		},
 		Spec: kedav1alpha1.ScaledObjectSpec{
 			ScaleTargetRef: &kedav1alpha1.ScaleTarget{
 				Kind: "Deployment",
-				Name: shared.BuildProcessorDeployName(topoName, pName, revNum),
+				Name: shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			},
 			PollingInterval: getInt32Pointer(15),
 			MinReplicaCount: getInt32Pointer(0),
@@ -143,6 +143,5 @@ func generateScaledObject(processor plumberv1alpha1.ComposedProcessor, namespace
 			},
 		},
 	}
-
 	return scaledObj
 }

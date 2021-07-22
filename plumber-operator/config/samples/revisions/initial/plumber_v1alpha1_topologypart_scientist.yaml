@@ -10,7 +10,7 @@ spec:
       env:
         - name: MSG
           value: "Hello from transformer-0!"
-      maxScale: 10
+      maxScale: 3
     transformer-branch-0:
       inputFrom: transformer-input
       image: "verstraetebert/plumber-greeter:v0.0.1"
@@ -18,7 +18,7 @@ spec:
         - name: MSG
           value: "Hello from branch 0!"
       sinkBindings: kafka-egress-0
-      maxScale: 20
+      maxScale: 3
     transformer-branch-1:
       inputFrom: transformer-input
       image: "verstraetebert/plumber-greeter:v0.0.1"
@@ -26,4 +26,4 @@ spec:
         - name: MSG
           value: "Hello from branch 1!"
       sinkBindings: kafka-egress-1
-      maxScale: 20
+      maxScale: 3

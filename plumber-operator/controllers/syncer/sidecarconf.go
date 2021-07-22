@@ -1,7 +1,5 @@
 package syncer
 
-import plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-
 type confInputRef struct {
 	Topic string `json:"topic"`
 	// TODO FIXME in sidecar & here (brokers -> bootstrap) & test
@@ -28,7 +26,7 @@ type SidecarConfig struct {
 	ProcessorDetails confProcessorDetails `json:"processorDetails"`
 }
 
-func buildSidecarConfig(pName string, refs processorKafkaRefs, topoRev plumberv1alpha1.TopologyRevision) SidecarConfig {
+func (sh *syncerHandler) buildSidecarConfig(pName string, refs processorKafkaRefs) SidecarConfig {
 	confOutputRefs := make([]confOutputRef, 0)
 	for _, o := range refs.outputRefs {
 		confOutputRefs = append(confOutputRefs, confOutputRef{
@@ -47,7 +45,7 @@ func buildSidecarConfig(pName string, refs processorKafkaRefs, topoRev plumberv1
 		ProcessorDetails: confProcessorDetails{
 			Name: pName,
 			// TODO reevaluate what is used in logs in the sidecar
-			Project: topoRev.Name,
+			Project: sh.activeRevision.GetName(),
 		},
 	}
 }

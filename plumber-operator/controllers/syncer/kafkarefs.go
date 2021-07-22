@@ -18,10 +18,10 @@ type kafkaRef struct {
 	initialOffset    string
 }
 
-func buildProcessorKafkaRefs(pName string, processor plumberv1alpha1.ComposedProcessor, activeRev plumberv1alpha1.TopologyRevision, topoName string) processorKafkaRefs {
+func (sh *syncerHandler) buildProcessorKafkaRefs(pName string, processor plumberv1alpha1.ComposedProcessor) processorKafkaRefs {
 	var kRefs processorKafkaRefs
 	// build input ref
-	if inputSource, takesInputFromSource := activeRev.Spec.Sources[processor.InputFrom]; takesInputFromSource {
+	if inputSource, takesInputFromSource := sh.activeRevision.Spec.Sources[processor.InputFrom]; takesInputFromSource {
 		kRefs.inputRef = kafkaRef{
 			bootstrapServers: strings.Split(inputSource.Brokers, ","),
 			topic:            inputSource.Topic,
@@ -34,7 +34,7 @@ func buildProcessorKafkaRefs(pName string, processor plumberv1alpha1.ComposedPro
 			// uses internal plumber kafka
 			bootstrapServers: strings.Split(PlumberKafkaBootstrap, ","),
 			// default topic name based on revision etc
-			topic:         shared.BuildOutputTopicName(activeRev.Namespace, topoName, processor.InputFrom, activeRev.Spec.Revision),
+			topic:         shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), processor.InputFrom, sh.activeRevision.Spec.Revision),
 			consumerGroup: processor.Internal.ConsumerGroup,
 			initialOffset: processor.Internal.InitialOffset,
 		}
@@ -43,13 +43,13 @@ func buildProcessorKafkaRefs(pName string, processor plumberv1alpha1.ComposedPro
 	if processor.HasOutputTopic() {
 		kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
 			bootstrapServers: strings.Split(PlumberKafkaBootstrap, ","),
-			topic:            shared.BuildOutputTopicName(activeRev.Namespace, topoName, pName, activeRev.Spec.Revision),
+			topic:            shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 		})
 	}
 	// check is necessary because strings.Split("", ",") will result in: [""]
 	if processor.SinkBindings != "" {
 		for _, sinkBinding := range strings.Split(processor.SinkBindings, ",") {
-			outputSink, _ := activeRev.Spec.Sinks[sinkBinding]
+			outputSink, _ := sh.activeRevision.Spec.Sinks[sinkBinding]
 			kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
 				bootstrapServers: strings.Split(outputSink.Brokers, ","),
 				topic:            outputSink.Topic,

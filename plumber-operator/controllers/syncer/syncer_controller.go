@@ -68,7 +68,6 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	// 2. Fetch active TopologyRevision
 	// if no activeRevision is set -> stop
-
 	if topo.Status.ActiveRevision == nil {
 		r.Log.Info("Active revision is nil")
 		return ctrl.Result{}, nil
@@ -89,14 +88,19 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 		return ctrl.Result{}, err
 	}
-
+	sHandler := syncerHandler{
+		cClient:        r.Client,
+		activeRevision: topoRev,
+		topology:       topo,
+		Log:            r.Log,
+	}
 	// 3. patch processors
-	err = r.reconcileProcessors(topo, topoRev)
+	err = sHandler.reconcileProcessors()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	//// 5. update state (global & for each component)
+	//// 4. update state (global & for each component)
 	//errUpdateState := r.updateState(&crdComp, domainTopo)
 	//if errUpdateState != nil {
 	//	r.Log.Error(err, "Failed to update status")
