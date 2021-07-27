@@ -25,11 +25,7 @@ type SidecarConfig struct {
 	ProcessorDetails confProcessorDetails `json:"processorDetails"`
 }
 
-<<<<<<< HEAD
-func buildSidecarConfig(pName string, refs processorKafkaRefs, topoRev plumberv1alpha1.TopologyRevision) SidecarConfig {
-=======
 func (sh *syncerHandler) buildSidecarConfig(pName string, refs processorKafkaRefs) SidecarConfig {
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 	confOutputRefs := make([]confOutputRef, 0)
 	for _, o := range refs.outputRefs {
 		confOutputRefs = append(confOutputRefs, confOutputRef{

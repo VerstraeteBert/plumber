@@ -6,10 +6,7 @@ import (
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
-<<<<<<< HEAD
-=======
 	"github.com/go-logr/logr"
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -71,20 +68,6 @@ func (sh *syncerHandler) reconcileProcessors() error {
 			}
 		}
 	}
-<<<<<<< HEAD
-	for pName, proc := range activeRev.Spec.Processors {
-		// generate scaledobject / deployment per processor
-		// important: if a NextRevision is set, any deployment/scaledobject of a processor connected to a source must be deleted to prepare for phase-out
-		if topo.Status.NextRevision == nil {
-			r.Log.Info("Next revision is nil")
-		}
-		if _, takesInputFromSource := activeRev.Spec.Sources[proc.InputFrom]; takesInputFromSource && topo.Status.NextRevision != nil {
-			r.Log.Info(fmt.Sprintf("Next revision is %d", *topo.Status.NextRevision))
-			var deployToDelete appsv1.Deployment
-			err := r.Client.Get(context.TODO(), client.ObjectKey{
-				Namespace: topo.GetNamespace(),
-				Name:      shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision),
-=======
 	for pName, proc := range sh.activeRevision.Spec.Processors {
 		// generate scaledobject / deployment per processor
 		// important: if a NextRevision is set, any deployment/scaledobject of a processor connected to a source must be deleted to prepare for phase-out
@@ -93,45 +76,28 @@ func (sh *syncerHandler) reconcileProcessors() error {
 			err := sh.cClient.Get(context.TODO(), client.ObjectKey{
 				Namespace: sh.topology.GetNamespace(),
 				Name:      shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 			}, &deployToDelete)
 			if err != nil {
 				if !kerrors.IsNotFound(err) {
 					return errors.Wrap(err, "failed to fetch deployment of source connected processor")
 				}
 			} else {
-<<<<<<< HEAD
-				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildProcessorDeployName(topo.GetName(), pName, activeRev.Spec.Revision)))
-				err := r.Client.Delete(context.TODO(), &deployToDelete)
-=======
 				err := sh.cClient.Delete(context.TODO(), &deployToDelete)
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 				if err != nil && !kerrors.IsNotFound(err) {
 					return errors.Wrap(err, "failed to delete deployment of source connected processor")
 				}
 			}
 			var scaledObjToDelete kedav1alpha1.ScaledObject
-<<<<<<< HEAD
-			err = r.Client.Get(context.TODO(), client.ObjectKey{
-				Namespace: topo.GetNamespace(),
-				Name:      shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision),
-=======
 			err = sh.cClient.Get(context.TODO(), client.ObjectKey{
 				Namespace: sh.topology.GetNamespace(),
 				Name:      shared.BuildScaledObjName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 			}, &scaledObjToDelete)
 			if err != nil {
 				if !kerrors.IsNotFound(err) {
 					return errors.Wrap(err, "failed to fetch scaledobject of source connected processor")
 				}
 			} else {
-<<<<<<< HEAD
-				r.Log.Info(fmt.Sprintf("Attempting to delete %s", shared.BuildScaledObjName(topo.GetName(), pName, activeRev.Spec.Revision)))
-				err := r.Client.Delete(context.TODO(), &scaledObjToDelete)
-=======
 				err := sh.cClient.Delete(context.TODO(), &scaledObjToDelete)
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 				if err != nil && !kerrors.IsNotFound(err) {
 					return errors.Wrap(err, "failed to delete scaledobject of source connected processor")
 				}
@@ -141,38 +107,21 @@ func (sh *syncerHandler) reconcileProcessors() error {
 			sidecarConfig := sh.buildSidecarConfig(pName, procKRefs)
 			deployment := sh.generateDeployment(pName, proc, sidecarConfig)
 			// safe to ignore the error
-<<<<<<< HEAD
-			err := ctrl.SetControllerReference(&activeRev, &deployment, r.Scheme)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for deployment %s", deployment.Name))
-			}
-			err = r.Patch(context.TODO(), &deployment, client.Apply, applyOpts...)
-=======
 			err := ctrl.SetControllerReference(&sh.activeRevision, &deployment, sh.Scheme)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for deployment %s", deployment.Name))
 			}
 			err = sh.cClient.Patch(context.TODO(), &deployment, client.Apply, applyOpts...)
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to patch deployment for processor %s", pName))
 			}
 			// reconcile scaled object (keda)
-<<<<<<< HEAD
-			scaledObject := generateScaledObject(proc, topo.Namespace, pName, topo.Name, activeRev.Spec.Revision, procKRefs)
-			err = ctrl.SetControllerReference(&activeRev, &scaledObject, r.Scheme)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for scaledObject %s", scaledObject.Name))
-			}
-			err = r.Patch(context.TODO(), &scaledObject, client.Apply, applyOpts...)
-=======
 			scaledObject := sh.generateScaledObject(pName, proc, procKRefs)
 			err = ctrl.SetControllerReference(&sh.activeRevision, &scaledObject, sh.Scheme)
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for scaledObject %s", scaledObject.Name))
 			}
 			err = sh.cClient.Patch(context.TODO(), &scaledObject, client.Apply, applyOpts...)
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to update scaled object for processor %s", pName))
 			}

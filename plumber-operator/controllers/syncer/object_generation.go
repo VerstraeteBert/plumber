@@ -50,11 +50,7 @@ const (
 	LabelProcessor = "plumber.ugent.be/processor-name"
 )
 
-<<<<<<< HEAD
-func generateDeployment(pName string, processor plumberv1alpha1.ComposedProcessor, topoName string, topoRev plumberv1alpha1.TopologyRevision, sidecarConf SidecarConfig) appsv1.Deployment {
-=======
 func (sh *syncerHandler) generateDeployment(pName string, processor plumberv1alpha1.ComposedProcessor, sidecarConf SidecarConfig) appsv1.Deployment {
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 	jsonConfmap, _ := json.Marshal(sidecarConf)
 	desiredDeployment := appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
@@ -67,20 +63,12 @@ func (sh *syncerHandler) generateDeployment(pName string, processor plumberv1alp
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
-<<<<<<< HEAD
-				MatchLabels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision)},
-=======
 				MatchLabels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision)},
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:   pName,
-<<<<<<< HEAD
-					Labels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(topoName, pName, topoRev.Spec.Revision)},
-=======
 					Labels: map[string]string{LabelProcessor: shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision)},
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 				},
 				Spec: corev1.PodSpec{
 					// TODO readinessprobe / liveness probes ? both in SDK and Sidecar?

@@ -49,11 +49,7 @@ func (sh *syncerHandler) buildProcessorKafkaRefs(pName string, processor plumber
 	// check is necessary because strings.Split("", ",") will result in: [""]
 	if processor.SinkBindings != "" {
 		for _, sinkBinding := range strings.Split(processor.SinkBindings, ",") {
-<<<<<<< HEAD
-			outputSink, _ := activeRev.Spec.Sinks[sinkBinding]
-=======
 			outputSink, _ := sh.activeRevision.Spec.Sinks[sinkBinding]
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 			kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
 				bootstrapServers: strings.Split(outputSink.Brokers, ","),
 				topic:            outputSink.Topic,

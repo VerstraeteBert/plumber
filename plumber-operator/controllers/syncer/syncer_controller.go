@@ -59,11 +59,7 @@ func (s *Syncer) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-<<<<<<< HEAD
-		For(&plumberv1alpha1.Topology{}).
-=======
 		For(&plumberv1alpha1.TopologyRevision{}).
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
 		Watches(
@@ -80,16 +76,10 @@ func (s *Syncer) SetupWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/finalizers,verbs=update
-<<<<<<< HEAD
-func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	defer shared.Elapsed(r.Log, "Syncing")()
-	r.Log.Info("starting syncer")
-=======
 func (s *Syncer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	defer shared.Elapsed(s.Log, "Syncing")()
 	s.Log.Info("starting syncer")
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
-	// 1. get composition object:
+	// 1. get revision object that triggered the reconcile:
 	var topoRev plumberv1alpha1.TopologyRevision
 	if err := s.Get(ctx, req.NamespacedName, &topoRev); err != nil {
 		if kerrors.IsNotFound(err) {
@@ -99,21 +89,6 @@ func (s *Syncer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, 
 		// requeue on any other error
 		return ctrl.Result{}, errors.Wrap(err, fmt.Sprintf("Failed to get Topology Object %s", req.String()))
 	}
-<<<<<<< HEAD
-	// 2. Fetch active TopologyRevision
-	// if no activeRevision is set -> stop
-
-	if topo.Status.ActiveRevision == nil {
-		r.Log.Info("Active revision is nil")
-		return ctrl.Result{}, nil
-	}
-	r.Log.Info("Active revision is not nil")
-	var topoRev plumberv1alpha1.TopologyRevision
-	err := r.Client.Get(ctx,
-		types.NamespacedName{
-			Name:      shared.BuildTopoRevisionName(topo.Name, *topo.Status.ActiveRevision),
-			Namespace: topo.Namespace,
-=======
 	// 2. Fetch topology that owns the topologyRevision
 	managingTopoName, found := topoRev.GetLabels()[shared.ManagedByLabel]
 	if !found {
@@ -125,7 +100,6 @@ func (s *Syncer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, 
 		types.NamespacedName{
 			Name:      managingTopoName,
 			Namespace: topoRev.GetNamespace(),
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
 		},
 		&topo,
 	)
