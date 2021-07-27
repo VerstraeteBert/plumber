@@ -15,11 +15,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// TopologyReconciler reconciles a Topology object
-type TopologyReconciler struct {
+// Syncer reconciles a Topology object
+type Syncer struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
@@ -41,45 +44,64 @@ func syncerUpdaterFilters() predicate.Predicate {
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *TopologyReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (s *Syncer) SetupWithManager(mgr ctrl.Manager) error {
+	topoToactiveRevisionMapper := func(obj client.Object) []reconcile.Request {
+		topo := obj.(*plumberv1alpha1.Topology)
+		if topo.Status.ActiveRevision == nil {
+			return []reconcile.Request{}
+		}
+		return []reconcile.Request{
+			{NamespacedName: types.NamespacedName{
+				Namespace: topo.GetNamespace(),
+				Name:      shared.BuildTopoRevisionName(topo.GetName(), *topo.Status.ActiveRevision),
+			}},
+		}
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&plumberv1alpha1.Topology{}).
+		For(&plumberv1alpha1.TopologyRevision{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
+		Watches(
+			&source.Kind{
+				Type: &plumberv1alpha1.Topology{},
+				// cache?
+			},
+			handler.EnqueueRequestsFromMapFunc(topoToactiveRevisionMapper),
+		).
 		WithEventFilter(syncerUpdaterFilters()).
-		Complete(r)
+		Complete(s)
 }
 
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/finalizers,verbs=update
-func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	defer shared.Elapsed(r.Log, "Syncing")()
-	r.Log.Info("starting syncer")
+func (s *Syncer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	defer shared.Elapsed(s.Log, "Syncing")()
+	s.Log.Info("starting syncer")
 	// 1. get composition object:
-	var topo plumberv1alpha1.Topology
-	if err := r.Get(ctx, req.NamespacedName, &topo); err != nil {
+	var topoRev plumberv1alpha1.TopologyRevision
+	if err := s.Get(ctx, req.NamespacedName, &topoRev); err != nil {
 		if kerrors.IsNotFound(err) {
-			r.Log.Info("Topology object not found. Ignoring since object must be deleted.")
+			s.Log.Info("TopologyRevision object not found. Ignoring since object must be deleted.")
 			return ctrl.Result{}, nil
 		}
 		// requeue on any other error
 		return ctrl.Result{}, errors.Wrap(err, fmt.Sprintf("Failed to get Topology Object %s", req.String()))
 	}
-	// 2. Fetch active TopologyRevision
-	// if no activeRevision is set -> stop
-	if topo.Status.ActiveRevision == nil {
-		r.Log.Info("Active revision is nil")
+	// 2. Fetch topology that owns the topologyRevision
+	managingTopoName, found := topoRev.GetLabels()[shared.ManagedByLabel]
+	if !found {
+		// TODO log me
 		return ctrl.Result{}, nil
 	}
-	r.Log.Info("Active revision is not nil")
-	var topoRev plumberv1alpha1.TopologyRevision
-	err := r.Client.Get(ctx,
+	var topo plumberv1alpha1.Topology
+	err := s.Client.Get(ctx,
 		types.NamespacedName{
-			Name:      shared.BuildTopoRevisionName(topo.Name, *topo.Status.ActiveRevision),
-			Namespace: topo.Namespace,
+			Name:      managingTopoName,
+			Namespace: topoRev.GetNamespace(),
 		},
-		&topoRev,
+		&topo,
 	)
 	if err != nil {
 		if kerrors.IsNotFound(err) {
@@ -88,11 +110,17 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 		return ctrl.Result{}, err
 	}
+	if topo.Status.ActiveRevision == nil {
+		return ctrl.Result{}, nil
+	}
+	if *topo.Status.ActiveRevision != topoRev.Spec.Revision {
+		return ctrl.Result{}, nil
+	}
 	sHandler := syncerHandler{
-		cClient:        r.Client,
+		cClient:        s.Client,
 		activeRevision: topoRev,
 		topology:       topo,
-		Log:            r.Log,
+		Log:            s.Log,
 	}
 	// 3. patch processors
 	err = sHandler.reconcileProcessors()
@@ -100,13 +128,10 @@ func (r *TopologyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, err
 	}
 
-	//// 4. update state (global & for each component)
-	//errUpdateState := r.updateState(&crdComp, domainTopo)
-	//if errUpdateState != nil {
-	//	r.Log.Error(err, "Failed to update status")
-	//}
-	//if  errUpdateState != nil {
-	//	return ctrl.Result{}, fmt.Errorf("error in cleanup or during state updates")
-	//}
+	// 4. update state based on active revision components (global & for each component)
+	err = sHandler.updateActiveStatus()
+	if err != nil {
+		return ctrl.Result{}, errors.Wrap(err, "failed to update status based on active revision")
+	}
 	return ctrl.Result{}, nil
 }

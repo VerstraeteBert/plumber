@@ -85,7 +85,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&syncer.TopologyReconciler{
+	if err = (&syncer.Syncer{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("plumber").WithName("Syncer"),
 		Scheme: mgr.GetScheme(),

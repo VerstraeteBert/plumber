@@ -31,7 +31,6 @@ func (sh *syncerHandler) generateOutputTopic(pName string, processor plumberv1al
 			APIVersion: "kafka.strimzi.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			// TODO topicName is redundant
 			Name:      shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			Namespace: "plumber-kafka",
 			Labels: map[string]string{

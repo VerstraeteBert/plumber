@@ -15,8 +15,7 @@ type confOutputRef struct {
 }
 
 type confProcessorDetails struct {
-	Name string `json:"name"`
-	// TODO think about what needs to be included in sidecar logs
+	Name    string `json:"name"`
 	Project string `json:"project"`
 }
 
@@ -43,8 +42,7 @@ func (sh *syncerHandler) buildSidecarConfig(pName string, refs processorKafkaRef
 		},
 		ConfOutputRefs: confOutputRefs,
 		ProcessorDetails: confProcessorDetails{
-			Name: pName,
-			// TODO reevaluate what is used in logs in the sidecar
+			Name:    pName,
 			Project: sh.activeRevision.GetName(),
 		},
 	}
