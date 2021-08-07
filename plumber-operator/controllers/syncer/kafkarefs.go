@@ -1,9 +1,10 @@
 package syncer
 
 import (
+	"strings"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
-	"strings"
 )
 
 type processorKafkaRefs struct {
@@ -49,7 +50,7 @@ func (sh *syncerHandler) buildProcessorKafkaRefs(pName string, processor plumber
 	// check is necessary because strings.Split("", ",") will result in: [""]
 	if processor.SinkBindings != "" {
 		for _, sinkBinding := range strings.Split(processor.SinkBindings, ",") {
-			outputSink, _ := sh.activeRevision.Spec.Sinks[sinkBinding]
+			outputSink := sh.activeRevision.Spec.Sinks[sinkBinding]
 			kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
 				bootstrapServers: strings.Split(outputSink.Brokers, ","),
 				topic:            outputSink.Topic,

@@ -3,7 +3,7 @@ package updater
 import (
 	"context"
 	"fmt"
-	"github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 // Updater reconciles a Topology object
@@ -50,7 +51,8 @@ func (u *UpdaterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 // SetupWithManager sets up the controller with the Manager.
 func (u *UpdaterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.Topology{}).
-		Owns(&v1alpha1.TopologyRevision{}).
+		For(&plumberv1alpha1.Topology{}).
+		Owns(&plumberv1alpha1.TopologyRevision{}).
+		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Complete(u)
 }

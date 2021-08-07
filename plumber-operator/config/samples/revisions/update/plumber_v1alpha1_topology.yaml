@@ -1,19 +1,11 @@
 apiVersion: plumber.ugent.be/v1alpha1
 kind: Topology
 metadata:
-<<<<<<< HEAD
-  name: plumber-composed-topology
-spec:
-  parts:
-    - name: branched-topo-engineer
-      revision: 1 # should ideally default to the last created revision
-=======
   name: revisiontesting
 spec:
   parts:
     - name: branched-topo-engineer
       revision: 2 # should ideally default to the last created revision
->>>>>>> 42157120b83a159dddce5473ee0f1c913436d463
     - name: branched-topo-scientist
       revision: 2
   defaultScale: 5

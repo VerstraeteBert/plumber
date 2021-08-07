@@ -3,6 +3,9 @@ package updater
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
@@ -16,8 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"strconv"
-	"time"
 )
 
 type Updater struct {
@@ -30,7 +31,7 @@ type Updater struct {
 
 const (
 	RevisionManagedByLabel string = "plumber.ugent.be/managed-by"
-	RevisionNumberLabel           = "plumber.ugent.be/revision-number"
+	RevisionNumberLabel    string = "plumber.ugent.be/revision-number"
 )
 
 func (u *Updater) handle() (reconcile.Result, error) {
@@ -375,7 +376,7 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 		}
 	}
 	for pName, reqOutPartitions := range connectedProcessorsMaxScale {
-		procObj, _ := revSpec.Processors[pName]
+		procObj := revSpec.Processors[pName]
 		procObj.Internal.OutputTopic = &plumberv1alpha1.InternalTopic{
 			Partitions: reqOutPartitions,
 		}

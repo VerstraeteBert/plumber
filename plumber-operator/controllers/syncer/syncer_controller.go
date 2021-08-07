@@ -3,6 +3,7 @@ package syncer
 import (
 	"context"
 	"fmt"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
@@ -121,13 +122,13 @@ func (s *Syncer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, 
 		activeRevision: topoRev,
 		topology:       topo,
 		Log:            s.Log,
+		Scheme:         s.Scheme,
 	}
 	// 3. patch processors
 	err = sHandler.reconcileProcessors()
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-
 	// 4. update state based on active revision components (global & for each component)
 	err = sHandler.updateActiveStatus()
 	if err != nil {

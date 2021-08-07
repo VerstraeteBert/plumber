@@ -3,23 +3,44 @@ package syncer
 import (
 	"context"
 	"fmt"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
 	StatusDeploymentReady string = "DeploymentReady"
 	StatusReady           string = "Ready"
+	FieldManager          string = "plumber-syncer"
 )
+
+func pruneMappedConditions(reqNames map[string]interface{}, currentNames *map[string]*[]metav1.Condition) bool {
+	pruned := false
+	for currName := range *currentNames {
+		if _, found := reqNames[currName]; !found {
+			delete(*currentNames, currName)
+			pruned = true
+		}
+	}
+	return pruned
+}
 
 func (sh *syncerHandler) determineSourceStates(newStatus *plumberv1alpha1.TopologyStatus) {
 	if newStatus.SourceStatuses == nil {
 		newStatus.SourceStatuses = make(map[string]*[]metav1.Condition)
+	} else {
+		nameMap := make(map[string]interface{}, len(newStatus.SourceStatuses))
+		for k := range sh.activeRevision.Spec.Sources {
+			nameMap[k] = nil
+		}
+		pruneMappedConditions(nameMap, &newStatus.SourceStatuses)
 	}
 	for sourceName := range sh.activeRevision.Spec.Sources {
 		_, found := newStatus.SourceStatuses[sourceName]
@@ -28,7 +49,7 @@ func (sh *syncerHandler) determineSourceStates(newStatus *plumberv1alpha1.Topolo
 			meta.SetStatusCondition(&newConds, metav1.Condition{
 				Type:    StatusReady,
 				Status:  "True",
-				Reason:  "",
+				Reason:  "ok",
 				Message: "",
 			})
 			newStatus.SourceStatuses[sourceName] = &newConds
@@ -39,6 +60,12 @@ func (sh *syncerHandler) determineSourceStates(newStatus *plumberv1alpha1.Topolo
 func (sh *syncerHandler) determineSinkStatuses(newStatus *plumberv1alpha1.TopologyStatus) {
 	if newStatus.SinkStatuses == nil {
 		newStatus.SinkStatuses = make(map[string]*[]metav1.Condition)
+	} else {
+		nameMap := make(map[string]interface{})
+		for k := range sh.activeRevision.Spec.Sinks {
+			nameMap[k] = nil
+		}
+		pruneMappedConditions(nameMap, &newStatus.SinkStatuses)
 	}
 	for sinkName := range sh.activeRevision.Spec.Sinks {
 		_, found := newStatus.SinkStatuses[sinkName]
@@ -47,7 +74,7 @@ func (sh *syncerHandler) determineSinkStatuses(newStatus *plumberv1alpha1.Topolo
 			meta.SetStatusCondition(&newConds, metav1.Condition{
 				Type:    StatusReady,
 				Status:  "True",
-				Reason:  "",
+				Reason:  "ok",
 				Message: "",
 			})
 			newStatus.SinkStatuses[sinkName] = &newConds
@@ -66,12 +93,12 @@ func toCompatCondStatus(status v1.ConditionStatus) metav1.ConditionStatus {
 	}
 }
 
-// TODO this logic should definitely be reconsidered heavily -> take knative serving's deployment status as reference
+// TODO this logic should definitely be reconsidered heavily (more meaningful info than just propagating the deployment ready status)
 func (sh *syncerHandler) deriveDeploymentReadyStatus(pName string) (*metav1.Condition, error) {
 	var deployment appsv1.Deployment
 	err := sh.cClient.Get(context.TODO(), types.NamespacedName{
 		Namespace: sh.activeRevision.GetNamespace(),
-		Name:      shared.BuildProcessorDeployName(sh.activeRevision.GetNamespace(), pName, sh.activeRevision.Spec.Revision),
+		Name:      shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 	}, &deployment)
 	if err != nil {
 		// this shouldn't ever occur, since we just created the object successfully
@@ -87,7 +114,12 @@ func (sh *syncerHandler) deriveDeploymentReadyStatus(pName string) (*metav1.Cond
 		}
 	}
 	if condAvailable == nil {
-		return nil, fmt.Errorf("condition %s not found on deployment %s in ns %s", appsv1.DeploymentAvailable, shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision), sh.activeRevision.GetNamespace())
+		return &metav1.Condition{
+			Type:    StatusDeploymentReady,
+			Status:  "Unknown",
+			Reason:  "NotReported",
+			Message: "",
+		}, nil
 	}
 	// propagate the available status for now
 	return &metav1.Condition{
@@ -126,11 +158,17 @@ func (sh *syncerHandler) determineProcessorStatus(newStatus *plumberv1alpha1.Top
 
 func (sh *syncerHandler) determineProcessorStatuses(newStatus *plumberv1alpha1.TopologyStatus) (bool, bool) {
 	// create new status if not present
+	updated := false
 	if newStatus.ProcessorStatuses == nil {
 		newStatus.ProcessorStatuses = make(map[string]*[]metav1.Condition)
+	} else {
+		nameMap := make(map[string]interface{})
+		for k := range sh.activeRevision.Spec.Processors {
+			nameMap[k] = nil
+		}
+		updated = pruneMappedConditions(nameMap, &newStatus.ProcessorStatuses)
 	}
 	shouldRequeue := false
-	updated := false
 	for pName := range sh.activeRevision.Spec.Processors {
 		pStatUpdated, pShouldReq := sh.determineProcessorStatus(newStatus, pName)
 		updated = updated || pStatUpdated
@@ -252,12 +290,12 @@ func (sh *syncerHandler) updateActiveStatus() error {
 	updated = updated || updatedGlobalStat
 
 	if updated {
-		sh.topology.Status = newStat
-		// TODO should be a patch now!
-		err := sh.cClient.Status().Update(context.TODO(), &sh.topology)
+		var newTopo plumberv1alpha1.Topology
+		sh.topology.DeepCopyInto(&newTopo)
+		newTopo.Status = newStat
+		err := sh.cClient.Status().Patch(context.TODO(), &newTopo, client.MergeFrom(&sh.topology), &client.PatchOptions{FieldManager: FieldManager})
 		if err != nil {
-			sh.Log.Error(err, fmt.Sprintf("failed to update status: %s", err.Error()))
-			return err
+			return errors.Wrap(err, "failed to patch topology status")
 		}
 	}
 
