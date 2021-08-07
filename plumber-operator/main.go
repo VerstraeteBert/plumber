@@ -18,9 +18,12 @@ package main
 
 import (
 	"flag"
-	"os"
-
+	"github.com/VerstraeteBert/plumber-operator/controllers/syncer"
+	"github.com/VerstraeteBert/plumber-operator/controllers/topologypart_revisions"
+	"github.com/VerstraeteBert/plumber-operator/controllers/updater"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
+	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -34,7 +37,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
@@ -69,8 +71,6 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	// TODO exclude system namespaces, and plumber namespaces through the use of predicates
-	// 	OR find a way to wildcard MultiNamespacedCacheBuilder
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -85,23 +85,38 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.TopologyReconciler{
+	if err = (&syncer.Syncer{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Topology"),
+		Log:    ctrl.Log.WithName("plumber").WithName("Syncer"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Topology")
+		setupLog.Error(err, "unable to create controller", "controller", "Syncer")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.TopologyPartReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("TopologyPart"),
-		Scheme: mgr.GetScheme(),
+	uClient, err := client.New(ctrl.GetConfigOrDie(), client.Options{Scheme: mgr.GetScheme()})
+	if err != nil {
+		setupLog.Error(err, "failed to create uncached client")
+	}
+	if err = (&updater.UpdaterReconciler{
+		Client:  mgr.GetClient(),
+		Log:     ctrl.Log.WithName("plumber").WithName("Updater"),
+		Scheme:  mgr.GetScheme(),
+		UClient: uClient,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "TopologyPart")
+		setupLog.Error(err, "unable to create controller", "controller", "Updater")
 		os.Exit(1)
 	}
+
+	if err = (&topologypart_revisions.TopologyPartReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("plumber").WithName("TopologyPartRevisionHandler"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "TopologyPartRevisionHandler")
+		os.Exit(1)
+	}
+
 	//+kubebuilder:scaffold:builder
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")

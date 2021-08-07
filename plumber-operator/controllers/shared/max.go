@@ -1,4 +1,4 @@
-package util
+package shared
 
 func MaxInt(x int, y int) int {
 	if x < y {

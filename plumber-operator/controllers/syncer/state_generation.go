@@ -1,57 +1,83 @@
-package controllers
+package syncer
 
 import (
 	"context"
 	"fmt"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
-	"github.com/VerstraeteBert/plumber-operator/controllers/domain"
-	"github.com/VerstraeteBert/plumber-operator/controllers/util"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
 	StatusDeploymentReady string = "DeploymentReady"
 	StatusReady           string = "Ready"
+	FieldManager          string = "plumber-syncer"
 )
 
-func (r *TopologyReconciler) determineSourceStates(newStatus *plumberv1alpha1.TopologyStatus, domainComp *domain.Topology) {
+func pruneMappedConditions(reqNames map[string]interface{}, currentNames *map[string]*[]metav1.Condition) bool {
+	pruned := false
+	for currName := range *currentNames {
+		if _, found := reqNames[currName]; !found {
+			delete(*currentNames, currName)
+			pruned = true
+		}
+	}
+	return pruned
+}
+
+func (sh *syncerHandler) determineSourceStates(newStatus *plumberv1alpha1.TopologyStatus) {
 	if newStatus.SourceStatuses == nil {
 		newStatus.SourceStatuses = make(map[string]*[]metav1.Condition)
+	} else {
+		nameMap := make(map[string]interface{}, len(newStatus.SourceStatuses))
+		for k := range sh.activeRevision.Spec.Sources {
+			nameMap[k] = nil
+		}
+		pruneMappedConditions(nameMap, &newStatus.SourceStatuses)
 	}
-	for _, sourceObj := range domainComp.Sources {
-		_, found := newStatus.SourceStatuses[sourceObj.Name]
+	for sourceName := range sh.activeRevision.Spec.Sources {
+		_, found := newStatus.SourceStatuses[sourceName]
 		if !found {
 			newConds := make([]metav1.Condition, 0)
 			meta.SetStatusCondition(&newConds, metav1.Condition{
 				Type:    StatusReady,
 				Status:  "True",
-				Reason:  "TODO",
-				Message: "TODO",
+				Reason:  "ok",
+				Message: "",
 			})
-			newStatus.SourceStatuses[sourceObj.Name] = &newConds
+			newStatus.SourceStatuses[sourceName] = &newConds
 		}
 	}
 }
 
-func (r *TopologyReconciler) determineSinkStatuses(newStatus *plumberv1alpha1.TopologyStatus, domainComp *domain.Topology) {
+func (sh *syncerHandler) determineSinkStatuses(newStatus *plumberv1alpha1.TopologyStatus) {
 	if newStatus.SinkStatuses == nil {
 		newStatus.SinkStatuses = make(map[string]*[]metav1.Condition)
+	} else {
+		nameMap := make(map[string]interface{})
+		for k := range sh.activeRevision.Spec.Sinks {
+			nameMap[k] = nil
+		}
+		pruneMappedConditions(nameMap, &newStatus.SinkStatuses)
 	}
-	for _, sinkObj := range domainComp.Sinks {
-		_, found := newStatus.SinkStatuses[sinkObj.Name]
+	for sinkName := range sh.activeRevision.Spec.Sinks {
+		_, found := newStatus.SinkStatuses[sinkName]
 		if !found {
 			newConds := make([]metav1.Condition, 0)
 			meta.SetStatusCondition(&newConds, metav1.Condition{
 				Type:    StatusReady,
 				Status:  "True",
-				Reason:  "TODO",
-				Message: "TODO",
+				Reason:  "ok",
+				Message: "",
 			})
-			newStatus.SinkStatuses[sinkObj.Name] = &newConds
+			newStatus.SinkStatuses[sinkName] = &newConds
 		}
 	}
 }
@@ -65,18 +91,17 @@ func toCompatCondStatus(status v1.ConditionStatus) metav1.ConditionStatus {
 	default:
 		return metav1.ConditionUnknown
 	}
-
 }
 
-// TODO this logic should definitely be reconsidered heavily -> take knative serving's deployment status as reference
-func (r *TopologyReconciler) deriveDeploymentReadyStatus(ns string, processorObj domain.Processor) (*metav1.Condition, error) {
+// TODO this logic should definitely be reconsidered heavily (more meaningful info than just propagating the deployment ready status)
+func (sh *syncerHandler) deriveDeploymentReadyStatus(pName string) (*metav1.Condition, error) {
 	var deployment appsv1.Deployment
-	err := r.Client.Get(context.TODO(), types.NamespacedName{
-		Namespace: ns,
-		Name:      GetDeploymentName(processorObj.Name),
+	err := sh.cClient.Get(context.TODO(), types.NamespacedName{
+		Namespace: sh.activeRevision.GetNamespace(),
+		Name:      shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 	}, &deployment)
 	if err != nil {
-		// this shouldn't ever occur, since we just created the object succesfully
+		// this shouldn't ever occur, since we just created the object successfully
 		// requeue if any error (notfound, anything else)
 		return nil, err
 	}
@@ -89,7 +114,12 @@ func (r *TopologyReconciler) deriveDeploymentReadyStatus(ns string, processorObj
 		}
 	}
 	if condAvailable == nil {
-		return nil, fmt.Errorf("condition %s not found on deployment %s in ns %s", appsv1.DeploymentAvailable, GetDeploymentName(processorObj.Name), ns)
+		return &metav1.Condition{
+			Type:    StatusDeploymentReady,
+			Status:  "Unknown",
+			Reason:  "NotReported",
+			Message: "",
+		}, nil
 	}
 	// propagate the available status for now
 	return &metav1.Condition{
@@ -100,25 +130,25 @@ func (r *TopologyReconciler) deriveDeploymentReadyStatus(ns string, processorObj
 	}, nil
 }
 
-func (r *TopologyReconciler) determineProcessorStatus(newStatus *plumberv1alpha1.TopologyStatus, topology *plumberv1alpha1.Topology, processorObj domain.Processor) (bool, bool) {
+func (sh *syncerHandler) determineProcessorStatus(newStatus *plumberv1alpha1.TopologyStatus, pName string) (bool, bool) {
 	shouldRequeue := false
 	updated := false
-	depConds, found := newStatus.ProcessorStatuses[processorObj.Name]
+	depConds, found := newStatus.ProcessorStatuses[pName]
 	// create new processor substatus if it is not present
 	if !found {
 		newConds := make([]metav1.Condition, 0)
 		depConds = &newConds
 		updated = true
 	}
-	deployStat, err := r.deriveDeploymentReadyStatus(topology.Namespace, processorObj)
+	deployStat, err := sh.deriveDeploymentReadyStatus(pName)
 	if err != nil {
-		r.Log.Error(err, "failed to derive deployment status")
+		sh.Log.Error(err, "failed to derive deployment status")
 		shouldRequeue = true
 	}
 	if deployStat != nil {
 		if !meta.IsStatusConditionPresentAndEqual(*depConds, deployStat.Type, deployStat.Status) {
 			meta.SetStatusCondition(depConds, *deployStat)
-			newStatus.ProcessorStatuses[processorObj.Name] = depConds
+			newStatus.ProcessorStatuses[pName] = depConds
 			updated = true
 		}
 	}
@@ -126,15 +156,21 @@ func (r *TopologyReconciler) determineProcessorStatus(newStatus *plumberv1alpha1
 	return updated, shouldRequeue
 }
 
-func (r *TopologyReconciler) determineProcessorStatuses(newStatus *plumberv1alpha1.TopologyStatus, topology *plumberv1alpha1.Topology, domainTopo *domain.Topology) (bool, bool) {
+func (sh *syncerHandler) determineProcessorStatuses(newStatus *plumberv1alpha1.TopologyStatus) (bool, bool) {
 	// create new status if not present
+	updated := false
 	if newStatus.ProcessorStatuses == nil {
 		newStatus.ProcessorStatuses = make(map[string]*[]metav1.Condition)
+	} else {
+		nameMap := make(map[string]interface{})
+		for k := range sh.activeRevision.Spec.Processors {
+			nameMap[k] = nil
+		}
+		updated = pruneMappedConditions(nameMap, &newStatus.ProcessorStatuses)
 	}
 	shouldRequeue := false
-	updated := false
-	for _, processorObj := range domainTopo.Processors {
-		pStatUpdated, pShouldReq := r.determineProcessorStatus(newStatus, topology, processorObj)
+	for pName := range sh.activeRevision.Spec.Processors {
+		pStatUpdated, pShouldReq := sh.determineProcessorStatus(newStatus, pName)
 		updated = updated || pStatUpdated
 		shouldRequeue = shouldRequeue || pShouldReq
 	}
@@ -149,25 +185,23 @@ func boolToCondStr(b bool) metav1.ConditionStatus {
 	}
 }
 
-func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.TopologyStatus, domainTopo *domain.Topology) bool {
+func (sh *syncerHandler) determineGlobalStatus(newStatus *plumberv1alpha1.TopologyStatus) bool {
 	if newStatus.Status == nil {
 		newStatus.Status = make([]metav1.Condition, 0)
 	}
-
 	// loop over all components and determine if their states are ready
 	// first, determine the number of components that should be marked as ready in the status, then count the number of actual ready components
 	numRequired := 0
 	//for range domainTopo.Processors {
 	//	// processor either requires 2 or 3 components to be ready
-	//	// 	-> 2 in case the processor has no interested processors (and thus neeeds no output topic)
+	//	// 	-> 2 in case the processor has no interested processors (and thus needs no output topic)
 	//	//if p.HasOutputTopic() {
 	//	//	numRequired += 3
 	//	//} else {
 	//	//	numRequired += 2
-	//	//}
-	//	// TODO since we only keep track of deployments so far, 1 required
+	//	//
 	//}
-	numRequired += len(domainTopo.Processors) + len(domainTopo.Sinks) + len(domainTopo.Sources)
+	numRequired += len(sh.activeRevision.Spec.Processors) + len(sh.activeRevision.Spec.Sinks) + len(sh.activeRevision.Spec.Sources)
 
 	// count actual number of statuses present and ready
 	condTypesToCheck := []string{StatusDeploymentReady, StatusReady}
@@ -177,7 +211,7 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 			continue
 		}
 		for _, cond := range *ps {
-			if util.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
+			if shared.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
 				numActual++
 			}
 		}
@@ -188,7 +222,7 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 			continue
 		}
 		for _, cond := range *sis {
-			if util.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
+			if shared.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
 				numActual++
 			}
 		}
@@ -199,7 +233,7 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 			continue
 		}
 		for _, cond := range *sos {
-			if util.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
+			if shared.Contains(condTypesToCheck, cond.Type) && cond.Status == metav1.ConditionTrue {
 				numActual++
 			}
 		}
@@ -237,30 +271,31 @@ func (r *TopologyReconciler) determineGlobalStatus(newStatus *plumberv1alpha1.To
 // Currently, for the global & subcomponents only a "Ready" condition is implemented
 // 		-> this logic should possibly live in the actual object generation loop, where for each object, based on observations, actions are taken on the status & object itself
 // https://github.com/kubernetes/apimachinery/blob/master/pkg/api/meta/conditions.go
-func (r *TopologyReconciler) updateStateSuccess(topology *plumberv1alpha1.Topology, domainTopo *domain.Topology) error {
-	defer util.Elapsed(r.Log, "Updating state")()
+func (sh *syncerHandler) updateActiveStatus() error {
+	defer shared.Elapsed(sh.Log, "Updating state")()
 
 	var newStat plumberv1alpha1.TopologyStatus
-	topology.Status.DeepCopyInto(&newStat)
+	sh.topology.Status.DeepCopyInto(&newStat)
 
 	updated := false
 	shouldRequeue := false
 
-	r.determineSourceStates(&newStat, domainTopo)
-	updatedProcessorStat, pShouldRequeue := r.determineProcessorStatuses(&newStat, topology, domainTopo)
+	sh.determineSourceStates(&newStat)
+	updatedProcessorStat, pShouldRequeue := sh.determineProcessorStatuses(&newStat)
 	updated = updated || updatedProcessorStat
 	shouldRequeue = shouldRequeue || pShouldRequeue
-	r.determineSinkStatuses(&newStat, domainTopo)
+	sh.determineSinkStatuses(&newStat)
 
-	updatedGlobalStat := r.determineGlobalStatus(&newStat, domainTopo)
+	updatedGlobalStat := sh.determineGlobalStatus(&newStat)
 	updated = updated || updatedGlobalStat
 
 	if updated {
-		topology.Status = newStat
-		err := r.Status().Update(context.TODO(), topology)
+		var newTopo plumberv1alpha1.Topology
+		sh.topology.DeepCopyInto(&newTopo)
+		newTopo.Status = newStat
+		err := sh.cClient.Status().Patch(context.TODO(), &newTopo, client.MergeFrom(&sh.topology), &client.PatchOptions{FieldManager: FieldManager})
 		if err != nil {
-			r.Log.Error(err, fmt.Sprintf("failed to update status: %s", err.Error()))
-			return err
+			return errors.Wrap(err, "failed to patch topology status")
 		}
 	}
 

@@ -50,11 +50,14 @@ type Processor struct {
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
-	MaxScale int `json:"maxScale"`
+	MaxScale *int `json:"maxScale"`
 	// +optional
 	Env []EnvVar `json:"env,omitempty"`
 	// +optional
 	SinkBindings string `json:"sinkBindings,omitempty"`
+	// +optional
+	// +kubebuilder:validation:Enum=Earliest;Latest;Continue
+	InitialOffset string `json:"initialOffset,omitempty"`
 }
 
 type EnvVar struct {
@@ -85,6 +88,13 @@ type TopologyPartList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []TopologyPart `json:"items"`
+}
+
+func (p *Processor) GetMaxScaleOrDefault() int {
+	if p.MaxScale == nil {
+		return 5
+	}
+	return *p.MaxScale
 }
 
 func init() {

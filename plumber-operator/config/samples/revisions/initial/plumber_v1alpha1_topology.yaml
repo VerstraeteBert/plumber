@@ -1,0 +1,11 @@
+apiVersion: plumber.ugent.be/v1alpha1
+kind: Topology
+metadata:
+  name: revisiontesting
+spec:
+  parts:
+    - name: branched-topo-engineer
+      revision: 1 # should ideally default to the last created revision
+    - name: branched-topo-scientist
+      revision: 1
+  defaultScale: 5

@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: topologyparts.plumber.ugent.be
+  name: topologyrevisions.plumber.ugent.be
 spec:
   group: plumber.ugent.be
   names:
-    kind: TopologyPart
-    listKind: TopologyPartList
-    plural: topologyparts
-    singular: topologypart
+    kind: TopologyRevision
+    listKind: TopologyRevisionList
+    plural: topologyrevisions
+    singular: topologyrevision
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: TopologyPart is the Schema for the topologies API
+        description: TopologyRevision is the Schema for the TopologyRevisions API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,8 +34,11 @@ spec:
           metadata:
             type: object
           spec:
-            description: TopologyPartSpec defines the desired state of Topology
+            description: TopologyRevisionSpec defines the desired state of Topology
+              at a certain point, in use for TopologyRevisions
             properties:
+              defaultScale:
+                type: integer
               processors:
                 additionalProperties:
                   properties:
@@ -61,6 +64,26 @@ spec:
                       type: string
                     inputFrom:
                       type: string
+                    internal:
+                      properties:
+                        consumerGroup:
+                          type: string
+                        initialOffset:
+                          enum:
+                          - Earliest
+                          - Latest
+                          type: string
+                        outputTopic:
+                          properties:
+                            partitions:
+                              type: integer
+                          required:
+                          - partitions
+                          type: object
+                      required:
+                      - consumerGroup
+                      - initialOffset
+                      type: object
                     maxScale:
                       default: 5
                       maximum: 100
@@ -71,9 +94,12 @@ spec:
                   required:
                   - image
                   - inputFrom
-                  - maxScale
+                  - internal
                   type: object
                 type: object
+              revision:
+                format: int64
+                type: integer
               sinks:
                 additionalProperties:
                   properties:
@@ -110,15 +136,12 @@ spec:
                   - type
                   type: object
                 type: object
+            required:
+            - revision
             type: object
           status:
-            description: TopologyPartStatus defines the observed state of TopologyPart
-            properties:
-              latestRevision:
-                format: int64
-                type: integer
-            required:
-            - latestRevision
+            description: TopologyRevisionStatus defines the observed state of a TopologyRevision,
+              currently not used anywhere
             type: object
         type: object
     served: true
