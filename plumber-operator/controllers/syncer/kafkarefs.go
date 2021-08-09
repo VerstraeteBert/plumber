@@ -33,7 +33,7 @@ func (sh *syncerHandler) buildProcessorKafkaRefs(pName string, processor plumber
 		// takes input from processor
 		kRefs.inputRef = kafkaRef{
 			// uses internal plumber kafka
-			bootstrapServers: strings.Split(PlumberKafkaBootstrap, ","),
+			bootstrapServers: strings.Split(shared.InternalBootstrap, ","),
 			// default topic name based on revision etc
 			topic:         shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), processor.InputFrom, sh.activeRevision.Spec.Revision),
 			consumerGroup: processor.Internal.ConsumerGroup,
@@ -43,7 +43,7 @@ func (sh *syncerHandler) buildProcessorKafkaRefs(pName string, processor plumber
 	// build output ref(s)
 	if processor.HasOutputTopic() {
 		kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
-			bootstrapServers: strings.Split(PlumberKafkaBootstrap, ","),
+			bootstrapServers: strings.Split(shared.InternalBootstrap, ","),
 			topic:            shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 		})
 	}

@@ -3,6 +3,7 @@ module github.com/VerstraeteBert/plumber-operator
 go 1.15
 
 require (
+	github.com/Shopify/sarama v1.28.0
 	github.com/go-logr/logr v0.4.0
 	github.com/google/go-cmp v0.5.5
 	github.com/kedacore/keda/v2 v2.2.0

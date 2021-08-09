@@ -50,7 +50,7 @@ type TopologyStatus struct {
 	NextRevision *int64 `json:"nextRevision,omitempty"`
 	// PhasingOutRevisions hold a list of TopologyRevision IDs that are currently being phased-out, i.e. processing any left-over messages
 	// +optional
-	PhasingOutRevisions []*int64 `json:"phasingOutRevisions,omitempty"`
+	PhasingOutRevisions []int64 `json:"phasingOutRevisions,omitempty"`
 	// Status contains the last observed status of the overall Topology
 	// +optional
 	Status []metav1.Condition `json:"topoconds"`

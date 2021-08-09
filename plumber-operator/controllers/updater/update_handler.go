@@ -91,7 +91,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 					}, nil
 				}
 				currentTopo := u.topology.DeepCopy()
-				currentTopo.Status.PhasingOutRevisions = append(currentTopo.Status.PhasingOutRevisions, currentTopo.Status.ActiveRevision)
+				currentTopo.Status.PhasingOutRevisions = append(currentTopo.Status.PhasingOutRevisions, *currentTopo.Status.ActiveRevision)
 				currentTopo.Status.ActiveRevision = currentTopo.Status.NextRevision
 				currentTopo.Status.NextRevision = nil
 				err = u.cClient.Status().Patch(context.TODO(), currentTopo, client.MergeFrom(u.topology), &client.PatchOptions{FieldManager: FieldManager})
