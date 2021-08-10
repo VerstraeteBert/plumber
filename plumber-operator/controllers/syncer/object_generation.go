@@ -1,6 +1,9 @@
 package syncer
 
 import (
+	"strconv"
+	"strings"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/VerstraeteBert/plumber-operator/controllers/syncer/util"
@@ -11,7 +14,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/json"
-	"strings"
 )
 
 func getInt64Pointer(base int64) *int64 {
@@ -32,9 +34,11 @@ func (sh *syncerHandler) generateOutputTopic(pName string, processor plumberv1al
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
-			Namespace: "plumber-kafka",
+			Namespace: shared.KafkaNamespace,
 			Labels: map[string]string{
-				"strimzi.io/cluster": "plumber-cluster",
+				"strimzi.io/cluster":  "plumber-cluster",
+				shared.RevisionNumber: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
+				shared.ManagedByLabel: sh.topology.GetName(),
 			},
 		},
 		Spec: strimziv1beta1.KafkaTopicSpec{
@@ -60,6 +64,10 @@ func (sh *syncerHandler) generateDeployment(pName string, processor plumberv1alp
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			Namespace: sh.activeRevision.GetNamespace(),
+			Labels: map[string]string{
+				shared.RevisionNumber: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
+				shared.ManagedByLabel: sh.topology.GetName(),
+			},
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -109,6 +117,10 @@ func (sh *syncerHandler) generateScaledObject(pName string, processor plumberv1a
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      shared.BuildScaledObjName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			Namespace: sh.activeRevision.GetNamespace(),
+			Labels: map[string]string{
+				shared.RevisionNumber: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
+				shared.ManagedByLabel: sh.topology.GetName(),
+			},
 		},
 		Spec: kedav1alpha1.ScaledObjectSpec{
 			ScaleTargetRef: &kedav1alpha1.ScaleTarget{

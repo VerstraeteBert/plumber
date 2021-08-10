@@ -9,6 +9,7 @@ import (
 	"github.com/Shopify/sarama"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
 	"github.com/go-logr/logr"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
@@ -220,7 +221,7 @@ func (gch *GarbageCollectorHandler) getProducerOffsets(partitions []int32, topic
 func (gch *GarbageCollectorHandler) identifyProcessorInputTopic(processorName string, rev plumberv1alpha1.TopologyRevision) (string, error) {
 	procObj, found := rev.Spec.Processors[processorName]
 	if !found {
-		return "", fmt.Errorf("processor %s not found on topologyrevision")
+		return "", fmt.Errorf("processor %s not found on topologyrevision", processorName)
 	}
 	if _, isProcInput := rev.Spec.Processors[procObj.InputFrom]; isProcInput {
 		return shared.BuildOutputTopicName(rev.GetNamespace(), gch.topology.GetName(), procObj.InputFrom, rev.Spec.Revision), nil
@@ -229,6 +230,32 @@ func (gch *GarbageCollectorHandler) identifyProcessorInputTopic(processorName st
 		return inputSource.Topic, nil
 	}
 	return "", fmt.Errorf("failed to identify input topic: no matching source object")
+}
+
+func (gch *GarbageCollectorHandler) deleteAllProcessorOutputTopics(topoRev plumberv1alpha1.TopologyRevision) error {
+	err := gch.cClient.DeleteAllOf(
+		context.TODO(),
+		&strimziv1beta1.KafkaTopic{},
+		client.InNamespace(shared.KafkaNamespace),
+		client.MatchingLabels{
+			shared.ManagedByLabel: gch.topology.GetName(),
+			shared.RevisionNumber: strconv.FormatInt(topoRev.Spec.Revision, 10),
+		},
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete all processor output topics")
+	}
+	return nil
+}
+
+func (gch *GarbageCollectorHandler) persistNewPhasingOutList(phasingOutList []int64) error {
+	newTopo := gch.topology.DeepCopy()
+	newTopo.Status.PhasingOutRevisions = phasingOutList
+	err := gch.cClient.Status().Patch(context.TODO(), newTopo, client.MergeFrom(gch.topology), client.FieldOwner("plumber-gc"))
+	if err != nil {
+		return errors.Wrap(err, "failed to patch phasingoutlist for topology")
+	}
+	return nil
 }
 
 func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
@@ -242,12 +269,15 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+	newPhasingOutList := make([]int64, len(phasingOutList))
+	for i, rev := range phasingOutList {
+		newPhasingOutList[i] = rev.Spec.Revision
+	}
 	shouldRequeue := false
 	phasingOutChanged := false
 	for _, topoRev := range phasingOutList {
 		activeProcSet, err := gch.listActiveProcessorsForRevision(topoRev)
 		if err != nil {
-			// okay to wait for the full 30s period to try again
 			gch.Log.Error(err, "failed to list active processors for revision", "revision", topoRev.Spec.Revision)
 			shouldRequeue = true
 			continue
@@ -261,8 +291,14 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 				continue
 			}
 			// 2. delete from phasing out list
-
+			for i, revNum := range newPhasingOutList {
+				if revNum == topoRev.Spec.Revision {
+					newPhasingOutList = append(newPhasingOutList[:i], newPhasingOutList[i+1:]...)
+					break
+				}
+			}
 			phasingOutChanged = true
+			continue
 		}
 		workQueue := getSourceConnectedProcessors(topoRev)
 		for len(workQueue) > 0 {
@@ -314,6 +350,7 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 			//	1. delete processor objects (first scaled object, then deployment. Topics are deleted when full topology is done)
 			err = gch.cleanUpProcessor(currProcName, topoRev)
 			if err != nil {
+				gch.Log.Error(err, "failed to delete processor objects", "rev", topoRev.Spec.Revision, "processor", currProc)
 				shouldRequeue = true
 				continue
 			}
@@ -322,8 +359,14 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 		}
 	}
 	if phasingOutChanged {
-		// TODO attempt patching the phasingoutlist
+		// persist new phasing out list on status
+		err := gch.persistNewPhasingOutList(newPhasingOutList)
+		if err != nil {
+			gch.Log.Error(err, "failed to persist new phasing out list")
+			shouldRequeue = true
+		}
 	}
+	shouldRequeue = shouldRequeue || len(newPhasingOutList) > 0
 	if shouldRequeue {
 		return reconcile.Result{RequeueAfter: time.Second * 30}, nil
 	}

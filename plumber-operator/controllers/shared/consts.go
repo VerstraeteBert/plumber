@@ -7,4 +7,5 @@ const (
 	OffsetLatest      string = "Latest"
 	OffsetEarliest    string = "Earliest"
 	OffsetContinue    string = "Continue"
+	KafkaNamespace    string = "plumber-kafka"
 )
