@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,25 +12,30 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/Shopify/sarama"
 )
 
 const (
 	brokers       string = "plumber-cluster-kafka-bootstrap.plumber-kafka:9092"
-	inputTopic    string = "baseline-output"
-	consumerGroup string = "csv-gen-1"
+	consumerGroup string = "csv-gen-2"
 )
 
 type Consumer struct {
-	ready chan bool
+	ready     chan bool
+	fileName  string
+	outBuffer []string
 }
 
 type benchmarkMessage struct {
-	ProduceTime string `json:"produceTime"`
+	StartTime string `json:"produceTime"`
 }
 
 func main() {
+	inputTopic := os.Getenv("INPUT_TOPIC")
+	fileName := os.Getenv("FILE_NAME")
+
 	log.Println("Starting a new Sarama consumer")
 	configConsumer := sarama.NewConfig()
 	configConsumer.Version = sarama.V2_7_0_0
@@ -41,7 +47,9 @@ func main() {
 	}
 
 	consumer := Consumer{
-		ready: make(chan bool),
+		ready:     make(chan bool),
+		outBuffer: make([]string, 0),
+		fileName:  fileName,
 	}
 
 	wg := &sync.WaitGroup{}
@@ -84,9 +92,28 @@ func main() {
 func (c *Consumer) msgHandler(ctx context.Context, cm *sarama.ConsumerMessage) error {
 	var benchMess benchmarkMessage
 	_ = json.Unmarshal(cm.Value, &benchMess)
-	valBegin, _ := strconv.ParseInt(benchMess.ProduceTime, 10, 64)
-	valEnd := cm.Timestamp.UnixNano()
-	fmt.Printf("Sender timestamp: %d; kafka timestamp: %d; diff in nano: %d, diff in ms: %f\n", valBegin, valEnd, valEnd-valBegin, float64(valEnd-valBegin)/float64(1e+6))
+	valBegin, _ := strconv.ParseInt(benchMess.StartTime, 10, 64)
+	valEnd := time.Now().UnixNano()
+	diffMs := float64(valEnd-valBegin) / float64(1e+6)
+	//fmt.Printf("Sender timestamp: %d; kafka timestamp: %d; diff in nano: %d, diff in ms: %f\n", valBegin, valEnd, valEnd-valBegin, diffMs)
+	c.outBuffer = append(c.outBuffer, fmt.Sprintf("%s,%s,%s\n", strconv.FormatInt(valBegin, 10), strconv.FormatInt(valEnd, 10), fmt.Sprintf("%.6f", diffMs)))
+	if len(c.outBuffer) >= 100 {
+		start := time.Now()
+		// flush
+		file, err := os.OpenFile("/bench/"+c.fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("failed creating file: %s", err)
+		}
+		datawriter := bufio.NewWriter(file)
+		for _, data := range c.outBuffer {
+			_, _ = datawriter.WriteString(data)
+		}
+		datawriter.Flush()
+		file.Close()
+		c.outBuffer = make([]string, 0)
+		elapsed := time.Since(start)
+		log.Printf("Writing took %s", elapsed)
+	}
 	return nil
 }
 

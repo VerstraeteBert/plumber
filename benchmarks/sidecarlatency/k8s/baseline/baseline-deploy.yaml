@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: baseline-test-deploy
-  namespace: baseline-test
+  namespace: default
   labels:
     app: baseline
 spec:

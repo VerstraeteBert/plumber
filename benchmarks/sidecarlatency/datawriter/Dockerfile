@@ -4,9 +4,9 @@ WORKDIR /app
 ADD go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o ./bin/csv-gen .
+RUN go build -o ./bin/data-writer .
 ### Runtime
 FROM alpine:3.12.2
 WORKDIR /app
-COPY --from=builder /app/bin/csv-gen ./
-ENTRYPOINT [ "./csv-gen" ]
+COPY --from=builder /app/bin/data-writer ./
+ENTRYPOINT [ "./data-writer" ]

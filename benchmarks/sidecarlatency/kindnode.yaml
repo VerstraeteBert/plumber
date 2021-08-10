@@ -1,0 +1,8 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  # add a mount from /home/brgverst/benchres on the host to /bench on the node
+  extraMounts:
+  - hostPath: /home/brgverst/benchres
+    containerPath: /bench

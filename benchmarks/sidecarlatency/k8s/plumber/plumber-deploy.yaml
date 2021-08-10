@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: plumber-test-deploy
-  namespace: plumber-test
+  namespace: default
   labels:
     app: plumber
 spec:

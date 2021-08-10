@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-writer-plumber
+  namespace: default
+  labels:
+    app: data-writer-plumber
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-writer-plumber
+  template:
+    metadata:
+      labels:
+        app: data-writer-plumber
+    spec:
+      volumes:
+      - name: bench
+        hostPath:
+          path: /bench  # matches kind containerPath:
+      containers:
+      - name: data-writer-plumber
+        image: verstraetebert/data-writer:v0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: bench
+          mountPath: /bench  # in the container filesystem
+        env:
+        - name: FILE_NAME
+          value: plumber.txt
+        - name: INPUT_TOPIC
+          value: plumber-output

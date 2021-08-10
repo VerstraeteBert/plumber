@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dapr-test-deploy
-  namespace: dapr-test
+  namespace: default
   labels:
     app: dapr
 spec:
