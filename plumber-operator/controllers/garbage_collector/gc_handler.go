@@ -2,13 +2,18 @@ package garbage_collector
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Shopify/sarama"
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
+	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -69,6 +74,55 @@ func (gch *GarbageCollectorHandler) listActiveProcessorsForRevision(rev plumberv
 	return activeProcs, nil
 }
 
+// TODO would be better to clean up all processor objects in at once per reconcile loop; deleteAllOf would only incur one API server call vs N calls with N being the amount processors that were just determined to be finished in the reconcile
+func (gch *GarbageCollectorHandler) cleanUpProcessor(processorName string, topoRev plumberv1alpha1.TopologyRevision) error {
+	alreadyDeleted := false
+	var procScaledObj kedav1alpha1.ScaledObject
+	err := gch.cClient.Get(context.TODO(), client.ObjectKey{
+		Namespace: topoRev.GetNamespace(),
+		Name:      shared.BuildScaledObjName(gch.topology.GetName(), processorName, topoRev.Spec.Revision),
+	}, &procScaledObj)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			alreadyDeleted = true
+		} else {
+			return errors.Wrap(err, "failed to get scaled object")
+		}
+	}
+	if !alreadyDeleted {
+		err = gch.cClient.Delete(context.TODO(), &procScaledObj)
+		if err != nil {
+			if !kerrors.IsNotFound(err) {
+				return errors.Wrap(err, "failed to delete scaled object")
+			}
+		}
+	}
+
+	alreadyDeleted = false
+	var procDep appsv1.Deployment
+	err = gch.cClient.Get(context.TODO(), client.ObjectKey{
+		Namespace: topoRev.GetNamespace(),
+		Name:      shared.BuildProcessorDeployName(gch.topology.GetName(), processorName, topoRev.Spec.Revision),
+	}, &procDep)
+	if err != nil {
+		if kerrors.IsNotFound(err) {
+			alreadyDeleted = true
+		} else {
+			return errors.Wrap(err, "failed to get deployment")
+		}
+	}
+	if !alreadyDeleted {
+		err = gch.cClient.Delete(context.TODO(), &procDep)
+		if err != nil {
+			if !kerrors.IsNotFound(err) {
+				return errors.Wrap(err, "failed to delete deployment")
+			}
+		}
+	}
+
+	return nil
+}
+
 func getSourceConnectedProcessors(rev plumberv1alpha1.TopologyRevision) []string {
 	res := make([]string, 0)
 	for procName, procObj := range rev.Spec.Processors {
@@ -105,16 +159,22 @@ func (gch *GarbageCollectorHandler) getPartitions(topic string) ([]int32, error)
 	return partitions, nil
 }
 
-func (gch *GarbageCollectorHandler) getConsumerOffsets(partitions []int32, topic string, consumergroup string) (*sarama.OffsetFetchResponse, error) {
+func (gch *GarbageCollectorHandler) getConsumerOffsets(partitions []int32, topic string, consumergroup string) (map[int32]int64, error) {
 	offsets, err := gch.kfkClients.admin.ListConsumerGroupOffsets(consumergroup, map[string][]int32{
 		topic: partitions,
 	})
-
 	if err != nil {
 		return nil, errors.Wrap(err, "error listing consumer group offsets")
 	}
-
-	return offsets, nil
+	consumerOffsets := make(map[int32]int64)
+	for _, part := range partitions {
+		block := offsets.GetBlock(topic, part)
+		if block == nil {
+			return nil, fmt.Errorf("failed to find consumer offset for partition %s in topic %s", part, topic)
+		}
+		consumerOffsets[part] = block.Offset
+	}
+	return consumerOffsets, nil
 }
 
 func (gch *GarbageCollectorHandler) getProducerOffsets(partitions []int32, topic string) (map[int32]int64, error) {
@@ -150,12 +210,25 @@ func (gch *GarbageCollectorHandler) getProducerOffsets(partitions []int32, topic
 				if block.Err != sarama.ErrNoError {
 					return nil, block.Err
 				}
-
 				offsets[partitionID] = block.Offset
 			}
 		}
 	}
 	return offsets, nil
+}
+
+func (gch *GarbageCollectorHandler) identifyProcessorInputTopic(processorName string, rev plumberv1alpha1.TopologyRevision) (string, error) {
+	procObj, found := rev.Spec.Processors[processorName]
+	if !found {
+		return "", fmt.Errorf("processor %s not found on topologyrevision")
+	}
+	if _, isProcInput := rev.Spec.Processors[procObj.InputFrom]; isProcInput {
+		return shared.BuildOutputTopicName(rev.GetNamespace(), gch.topology.GetName(), procObj.InputFrom, rev.Spec.Revision), nil
+	}
+	if inputSource, isSourceInput := rev.Spec.Sources[procObj.InputFrom]; isSourceInput {
+		return inputSource.Topic, nil
+	}
+	return "", fmt.Errorf("failed to identify input topic: no matching source object")
 }
 
 func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
@@ -181,6 +254,15 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 		}
 		if len(activeProcSet) == 0 {
 			// no more active processors -> done!
+			// 1. delete all intermediary topics!
+			err := gch.deleteAllProcessorOutputTopics(topoRev)
+			if err != nil {
+				shouldRequeue = true
+				continue
+			}
+			// 2. delete from phasing out list
+
+			phasingOutChanged = true
 		}
 		workQueue := getSourceConnectedProcessors(topoRev)
 		for len(workQueue) > 0 {
@@ -195,7 +277,7 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 			}
 			currProc, _ := topoRev.Spec.Processors[currProcName]
 			// TODO if processor is source connected it may not point to an internal kafka topic, must construct a client for that specific bootstraplist
-			inputTopic := getInputTopic(currProcName, topoRev)
+			inputTopic, _ := gch.identifyProcessorInputTopic(currProcName, topoRev)
 			partIds, err := gch.getPartitions(inputTopic)
 			if err != nil {
 				// TODO should depend on the actual error being thrown; brokers unavailable we can retry, a topic not existing will just put this in a constant retry loop
@@ -214,9 +296,36 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 				shouldRequeue = true
 				continue
 			}
-
+			foundNonCatchUp := false
+			for part, consOffset := range consumerOffsets {
+				if foundNonCatchUp {
+					break
+				}
+				prodOffset, _ := producerOffsets[part]
+				if consOffset < prodOffset {
+					foundNonCatchUp = true
+				}
+			}
+			if foundNonCatchUp {
+				shouldRequeue = true
+				continue
+			}
+			//  all caught up
+			//	1. delete processor objects (first scaled object, then deployment. Topics are deleted when full topology is done)
+			err = gch.cleanUpProcessor(currProcName, topoRev)
+			if err != nil {
+				shouldRequeue = true
+				continue
+			}
+			// 	2. enqueue sucessors of processor
+			workQueue = append(workQueue, getSuccessors(currProcName, topoRev.Spec.Processors)...)
 		}
-
+	}
+	if phasingOutChanged {
+		// TODO attempt patching the phasingoutlist
+	}
+	if shouldRequeue {
+		return reconcile.Result{RequeueAfter: time.Second * 30}, nil
 	}
 	return reconcile.Result{}, nil
 }
