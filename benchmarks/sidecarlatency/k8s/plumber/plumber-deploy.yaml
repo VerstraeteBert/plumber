@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plumber-test-deploy
+  namespace: plumber-test
+  labels:
+    app: plumber
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plumber
+  template:
+    metadata:
+      labels:
+        app: plumber
+    spec:
+      containers:
+      - name: processor
+        image: verstraetebert/plumber-sidecar-tester:v0.0.1
+      - name: plumber-sidecar
+        image: verstraetebert/plumber-sidecar:v0.0.1
+        env:
+          - name: PLUMBER_CONFIG
+            value: '{"inputRef":{"topic":"benchmark-input","brokers":["plumber-cluster-kafka-bootstrap.plumber-kafka:9092"],"consumerGroup":"plumber-input-group","initialOffset":"Latest"},"outputRefs":[{"topic":"plumber-output","brokers":["plumber-cluster-kafka-bootstrap.plumber-kafka:9092"]}],"processorDetails":{"name":"tester","project":"evaluation"}}'

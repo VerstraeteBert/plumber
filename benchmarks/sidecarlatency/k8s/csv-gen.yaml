@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: csv-gen
+  namespace: default
+  labels:
+    app: csv-gen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csv-gen
+  template:
+    metadata:
+      labels:
+        app: csv-gen
+    spec:
+      containers:
+      - name: csv-gen
+        image: verstraetebert/csv-gen:v0.0.1
+        imagePullPolicy: Always

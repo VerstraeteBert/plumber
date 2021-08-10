@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: baseline-test-deploy
+  namespace: baseline-test
+  labels:
+    app: baseline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: baseline
+  template:
+    metadata:
+      labels:
+        app: baseline
+    spec:
+      containers:
+      - name: baseline
+        image: verstraetebert/baseline-tester:v0.0.1

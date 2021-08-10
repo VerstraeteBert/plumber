@@ -1,0 +1,15 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: dapr-output
+  namespace: dapr-test
+spec:
+  type: bindings.kafka
+  version: v1
+  metadata:
+  - name: brokers
+    value: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
+  - name: publishTopic
+    value: dapr-output
+  - name: authRequired
+    value: "false"
