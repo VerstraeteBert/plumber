@@ -44,7 +44,7 @@ func (gch *GarbageCollectorHandler) listPhasingOutRevisions() ([]plumberv1alpha1
 	topoMatchReq, _ := labels.NewRequirement(RevisionManagedByLabel, selection.In, []string{gch.topology.Name})
 	listSelector := labels.NewSelector().Add(*phasingOutReq).Add(*topoMatchReq)
 	var revList plumberv1alpha1.TopologyRevisionList
-	err := gch.cClient.List(context.TODO(), &revList, client.MatchingLabelsSelector{listSelector}, client.InNamespace((*gch.topology).GetNamespace()))
+	err := gch.cClient.List(context.TODO(), &revList, client.MatchingLabelsSelector{Selector: listSelector}, client.InNamespace((*gch.topology).GetNamespace()))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list all phasing out topology revisions")
 	}
@@ -57,7 +57,7 @@ func (gch *GarbageCollectorHandler) listActiveProcessorsForRevision(rev plumberv
 	topoMatchReq, _ := labels.NewRequirement(RevisionManagedByLabel, selection.In, []string{gch.topology.Name})
 	listSelector := labels.NewSelector().Add(*phasingOutReq).Add(*topoMatchReq)
 	var deployList appsv1.DeploymentList
-	err := gch.cClient.List(context.TODO(), &deployList, client.MatchingLabelsSelector{listSelector}, client.InNamespace((*gch.topology).GetNamespace()))
+	err := gch.cClient.List(context.TODO(), &deployList, client.MatchingLabelsSelector{Selector: listSelector}, client.InNamespace((*gch.topology).GetNamespace()))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list all active processors for a given revision")
 	}
@@ -171,7 +171,7 @@ func (gch *GarbageCollectorHandler) getConsumerOffsets(partitions []int32, topic
 	for _, part := range partitions {
 		block := offsets.GetBlock(topic, part)
 		if block == nil {
-			return nil, fmt.Errorf("failed to find consumer offset for partition %s in topic %s", part, topic)
+			return nil, fmt.Errorf("failed to find consumer offset for partition %s in topic %s", strconv.FormatInt(int64(part), 10), topic)
 		}
 		consumerOffsets[part] = block.Offset
 	}
