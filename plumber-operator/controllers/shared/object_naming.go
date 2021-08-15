@@ -22,6 +22,10 @@ func BuildOutputTopicName(namespace string, topoName string, processorName strin
 	return namespace + "-" + topoName + "-" + processorName + "-" + strconv.FormatInt(revisionNum, 10)
 }
 
+func BuildTopoPartRevisionName(topoPartName string, revisionNumber int64) string {
+	return "topologypart-" + topoPartName + "-revision-" + strconv.FormatInt(revisionNumber, 10)
+}
+
 func withPlumberPrefix(suffix string) string {
 	return "plumber-" + suffix
 }

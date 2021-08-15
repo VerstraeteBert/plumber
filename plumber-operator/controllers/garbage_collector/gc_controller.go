@@ -59,19 +59,16 @@ func gcFilters() predicate.Predicate {
 		// the updater watches the topology object,
 		//and is only interested in updates if a change occurred in its status.phasingOut
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if e.ObjectOld.GetObjectKind().GroupVersionKind().Kind == "Topology" {
-				oldTopo := e.ObjectOld.(*plumberv1alpha1.Topology)
-				newTopo := e.ObjectNew.(*plumberv1alpha1.Topology)
-				if newTopo.Status.PhasingOutRevisions == nil {
-					return false
-				}
-				if oldTopo.Status.PhasingOutRevisions == nil {
-					return true
-				}
-				// check if a revision was added to the phasing out list
-				return len(oldTopo.Status.PhasingOutRevisions) < len(newTopo.Status.PhasingOutRevisions)
+			oldTopo := e.ObjectOld.(*plumberv1alpha1.Topology)
+			newTopo := e.ObjectNew.(*plumberv1alpha1.Topology)
+			if newTopo.Status.PhasingOutRevisions == nil {
+				return false
 			}
-			return true
+			if oldTopo.Status.PhasingOutRevisions == nil {
+				return true
+			}
+			// check if a revision was added to the phasing out list
+			return len(oldTopo.Status.PhasingOutRevisions) < len(newTopo.Status.PhasingOutRevisions)
 		},
 	}
 }

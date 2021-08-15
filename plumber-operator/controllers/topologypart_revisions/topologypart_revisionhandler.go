@@ -3,6 +3,9 @@ package topologypart_revisions
 import (
 	"bytes"
 	"context"
+	"sort"
+	"strconv"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	"github.com/go-logr/logr"
@@ -16,8 +19,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sort"
-	"strconv"
 )
 
 type RevisionHandler struct {
@@ -75,15 +76,15 @@ func (rh *RevisionHandler) handle() (reconcile.Result, error) {
 	}
 
 	// update status with newest revision number, if it needs to be updated
-	if updatedRevisionNumber != rh.topologyPart.Status.LatestRevision {
-		// FIXME not found error on topology, unsure why
-		//rh.topologyPart.Status.LatestRevision = updatedRevisionNumber
-		//err := rh.cClient.Status().Update(context.TODO(), rh.topologyPart)
-		//if err != nil {
-		//	rh.Log.Error(err, "failed to update status")
-		//	return reconcile.Result{}, err
-		//}
-	}
+	//if updatedRevisionNumber != rh.topologyPart.Status.LatestRevision {
+	// FIXME not found error on topology, unsure why
+	//rh.topologyPart.Status.LatestRevision = updatedRevisionNumber
+	//err := rh.cClient.Status().Update(context.TODO(), rh.topologyPart)
+	//if err != nil {
+	//	rh.Log.Error(err, "failed to update status")
+	//	return reconcile.Result{}, err
+	//}
+	//}
 
 	return reconcile.Result{}, nil
 }
@@ -119,11 +120,11 @@ func createNewRevision(topologyPart *plumberv1alpha1.TopologyPart, revisionNum i
 			APIVersion: appsv1.SchemeGroupVersion.String(),
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "topologypart" + "-" + topologyPart.Name + "-revision-" + strconv.FormatInt(revisionNum, 10),
+			Name:      shared.BuildTopoPartRevisionName(topologyPart.GetName(), revisionNum),
 			Namespace: topologyPart.Namespace,
 			Labels: map[string]string{
-				shared.ManagedByLabel: topologyPart.Name,
-				shared.RevisionNumber: strconv.FormatInt(revisionNum, 10),
+				shared.ManagedByLabel:      topologyPart.Name,
+				shared.RevisionNumberLabel: strconv.FormatInt(revisionNum, 10),
 			},
 		},
 		Data:     runtime.RawExtension{Raw: str.Bytes()},

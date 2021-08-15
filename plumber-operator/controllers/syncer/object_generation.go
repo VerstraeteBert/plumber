@@ -36,9 +36,10 @@ func (sh *syncerHandler) generateOutputTopic(pName string, processor plumberv1al
 			Name:      shared.BuildOutputTopicName(sh.activeRevision.GetNamespace(), sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			Namespace: shared.KafkaNamespace,
 			Labels: map[string]string{
-				"strimzi.io/cluster":  "plumber-cluster",
-				shared.RevisionNumber: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
-				shared.ManagedByLabel: sh.topology.GetName(),
+				"strimzi.io/cluster":       "plumber-cluster",
+				shared.RevisionNumberLabel: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
+				shared.ManagedByLabel:      sh.topology.GetName(),
+				shared.ProcessorNameLabel:  pName,
 			},
 		},
 		Spec: strimziv1beta1.KafkaTopicSpec{
@@ -65,8 +66,9 @@ func (sh *syncerHandler) generateDeployment(pName string, processor plumberv1alp
 			Name:      shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			Namespace: sh.activeRevision.GetNamespace(),
 			Labels: map[string]string{
-				shared.RevisionNumber: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
-				shared.ManagedByLabel: sh.topology.GetName(),
+				shared.RevisionNumberLabel: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
+				shared.ManagedByLabel:      sh.topology.GetName(),
+				shared.ProcessorNameLabel:  pName,
 			},
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -118,8 +120,9 @@ func (sh *syncerHandler) generateScaledObject(pName string, processor plumberv1a
 			Name:      shared.BuildScaledObjName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 			Namespace: sh.activeRevision.GetNamespace(),
 			Labels: map[string]string{
-				shared.RevisionNumber: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
-				shared.ManagedByLabel: sh.topology.GetName(),
+				shared.RevisionNumberLabel: strconv.FormatInt(sh.activeRevision.Spec.Revision, 10),
+				shared.ManagedByLabel:      sh.topology.GetName(),
+				shared.ProcessorNameLabel:  pName,
 			},
 		},
 		Spec: kedav1alpha1.ScaledObjectSpec{

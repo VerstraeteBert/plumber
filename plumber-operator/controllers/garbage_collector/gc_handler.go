@@ -29,22 +29,16 @@ type GarbageCollectorHandler struct {
 	kfkClients KafkaClients
 }
 
-const (
-	RevisionManagedByLabel string = "plumber.ugent.be/managed-by"
-	RevisionNumberLabel    string = "plumber.ugent.be/revision-number"
-	ProcessorNameLabel     string = "plumber.ugent.be/processor-name"
-)
-
 func (gch *GarbageCollectorHandler) listPhasingOutRevisions() ([]plumberv1alpha1.TopologyRevision, error) {
 	strRevNums := make([]string, len(gch.topology.Status.PhasingOutRevisions))
 	for i, revNum := range gch.topology.Status.PhasingOutRevisions {
 		strRevNums[i] = strconv.FormatInt(revNum, 10)
 	}
-	phasingOutReq, _ := labels.NewRequirement(RevisionNumberLabel, selection.In, strRevNums)
-	topoMatchReq, _ := labels.NewRequirement(RevisionManagedByLabel, selection.In, []string{gch.topology.Name})
+	phasingOutReq, _ := labels.NewRequirement(shared.RevisionNumberLabel, selection.In, strRevNums)
+	topoMatchReq, _ := labels.NewRequirement(shared.ManagedByLabel, selection.In, []string{gch.topology.Name})
 	listSelector := labels.NewSelector().Add(*phasingOutReq).Add(*topoMatchReq)
 	var revList plumberv1alpha1.TopologyRevisionList
-	err := gch.cClient.List(context.TODO(), &revList, client.MatchingLabelsSelector{Selector: listSelector}, client.InNamespace((*gch.topology).GetNamespace()))
+	err := gch.uClient.List(context.TODO(), &revList, client.MatchingLabelsSelector{Selector: listSelector}, client.InNamespace((*gch.topology).GetNamespace()))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list all phasing out topology revisions")
 	}
@@ -53,8 +47,8 @@ func (gch *GarbageCollectorHandler) listPhasingOutRevisions() ([]plumberv1alpha1
 
 // an active processor is a processor which's deployment still exists
 func (gch *GarbageCollectorHandler) listActiveProcessorsForRevision(rev plumberv1alpha1.TopologyRevision) (map[string]interface{}, error) {
-	phasingOutReq, _ := labels.NewRequirement(RevisionNumberLabel, selection.In, []string{strconv.FormatInt(rev.Spec.Revision, 10)})
-	topoMatchReq, _ := labels.NewRequirement(RevisionManagedByLabel, selection.In, []string{gch.topology.Name})
+	phasingOutReq, _ := labels.NewRequirement(shared.RevisionNumberLabel, selection.In, []string{strconv.FormatInt(rev.Spec.Revision, 10)})
+	topoMatchReq, _ := labels.NewRequirement(shared.ManagedByLabel, selection.In, []string{gch.topology.Name})
 	listSelector := labels.NewSelector().Add(*phasingOutReq).Add(*topoMatchReq)
 	var deployList appsv1.DeploymentList
 	err := gch.cClient.List(context.TODO(), &deployList, client.MatchingLabelsSelector{Selector: listSelector}, client.InNamespace((*gch.topology).GetNamespace()))
@@ -63,7 +57,7 @@ func (gch *GarbageCollectorHandler) listActiveProcessorsForRevision(rev plumberv
 	}
 	activeProcs := make(map[string]interface{})
 	for _, deploy := range deployList.Items {
-		procOwner, found := deploy.Labels[ProcessorNameLabel]
+		procOwner, found := deploy.Labels[shared.ProcessorNameLabel]
 		if !found {
 			continue
 		}
@@ -124,14 +118,18 @@ func (gch *GarbageCollectorHandler) cleanUpProcessor(processorName string, topoR
 	return nil
 }
 
-func getSourceConnectedProcessors(rev plumberv1alpha1.TopologyRevision) []string {
-	res := make([]string, 0)
+func getSourceConnectedProcessorsSuccessors(rev plumberv1alpha1.TopologyRevision) []string {
+	sourceConn := make([]string, 0)
 	for procName, procObj := range rev.Spec.Processors {
 		if _, connectedToSource := rev.Spec.Sources[procObj.InputFrom]; connectedToSource {
-			res = append(res, procName)
+			sourceConn = append(sourceConn, procName)
 		}
 	}
-	return res
+	succ := make([]string, 0)
+	for _, procName := range sourceConn {
+		succ = append(succ, getSuccessors(procName, rev.Spec.Processors)...)
+	}
+	return succ
 }
 
 func getSuccessors(procName string, processors map[string]plumberv1alpha1.ComposedProcessor) []string {
@@ -238,8 +236,8 @@ func (gch *GarbageCollectorHandler) deleteAllProcessorOutputTopics(topoRev plumb
 		&strimziv1beta1.KafkaTopic{},
 		client.InNamespace(shared.KafkaNamespace),
 		client.MatchingLabels{
-			shared.ManagedByLabel: gch.topology.GetName(),
-			shared.RevisionNumber: strconv.FormatInt(topoRev.Spec.Revision, 10),
+			shared.ManagedByLabel:      gch.topology.GetName(),
+			shared.RevisionNumberLabel: strconv.FormatInt(topoRev.Spec.Revision, 10),
 		},
 	)
 	if err != nil {
@@ -300,7 +298,7 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 			phasingOutChanged = true
 			continue
 		}
-		workQueue := getSourceConnectedProcessors(topoRev)
+		workQueue := getSourceConnectedProcessorsSuccessors(topoRev)
 		for len(workQueue) > 0 {
 			// peek
 			currProcName := workQueue[0]
@@ -311,8 +309,7 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 				// enqueue
 				workQueue = append(workQueue, getSuccessors(currProcName, topoRev.Spec.Processors)...)
 			}
-			currProc, _ := topoRev.Spec.Processors[currProcName]
-			// TODO if processor is source connected it may not point to an internal kafka topic, must construct a client for that specific bootstraplist
+			currProc := topoRev.Spec.Processors[currProcName]
 			inputTopic, _ := gch.identifyProcessorInputTopic(currProcName, topoRev)
 			partIds, err := gch.getPartitions(inputTopic)
 			if err != nil {
@@ -337,7 +334,7 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 				if foundNonCatchUp {
 					break
 				}
-				prodOffset, _ := producerOffsets[part]
+				prodOffset := producerOffsets[part]
 				if consOffset < prodOffset {
 					foundNonCatchUp = true
 				}
