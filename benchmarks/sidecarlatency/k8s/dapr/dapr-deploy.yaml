@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dapr-test-deploy
+  namespace: default
+  labels:
+    app: dapr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dapr
+  template:
+    metadata:
+      labels:
+        app: dapr
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "tester"
+        dapr.io/app-port: "8080"
+    spec:
+      containers:
+      - name: tester
+        image: verstraetebert/dapr-tester:v0.0.1
+        imagePullPolicy: Always

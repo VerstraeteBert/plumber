@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-writer-dapr
+  namespace: default
+  labels:
+    app: data-writer-dapr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-writer-dapr
+  template:
+    metadata:
+      labels:
+        app: data-writer-dapr
+    spec:
+      volumes:
+      - name: bench
+        hostPath:
+          path: /bench  # matches kind containerPath:
+      containers:
+      - name: data-writer-dapr
+        image: verstraetebert/data-writer:v0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: bench
+          mountPath: /bench  # in the container filesystem
+        env:
+        - name: FILE_NAME
+          value: dapr.txt
+        - name: INPUT_TOPIC
+          value: dapr-output

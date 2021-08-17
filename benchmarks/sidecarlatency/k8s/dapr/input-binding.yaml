@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: benchmark
+  namespace: default
+spec:
+  type: bindings.kafka
+  version: v1
+  metadata:
+  - name: topics
+    value: benchmark-input
+  - name: brokers
+    value: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
+  - name: consumerGroup
+    value: dapr-group
+  - name: authRequired
+    value: "false"

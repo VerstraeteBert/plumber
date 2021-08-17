@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-writer-baseline
+  namespace: default
+  labels:
+    app: data-writer-baseline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-writer-baseline
+  template:
+    metadata:
+      labels:
+        app: data-writer-baseline
+    spec:
+      volumes:
+      - name: bench
+        hostPath:
+          path: /bench  # matches kind containerPath:
+      containers:
+      - name: data-writer-baseline
+        image: verstraetebert/data-writer:v0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: bench
+          mountPath: /bench  # in the container filesystem
+        env:
+        - name: FILE_NAME
+          value: baseline.txt
+        - name: INPUT_TOPIC
+          value: baseline-output
