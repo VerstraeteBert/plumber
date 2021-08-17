@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -29,17 +30,20 @@ type Syncer struct {
 	Scheme *runtime.Scheme
 }
 
-func syncerUpdaterFilters() predicate.Predicate {
+func syncerUpdaterFilters(scheme *runtime.Scheme) predicate.Predicate {
 	return predicate.Funcs{
 		// the updater watches the topology object,
 		//and is only interested in updates if a change occurred in its status.NextRevision or status.ActiveRevision
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			if e.ObjectOld.GetObjectKind().GroupVersionKind().Kind == "Topology" {
+			gvk, _ := apiutil.GVKForObject(e.ObjectOld, scheme)
+			switch gvk.Kind {
+			case "Topology":
 				oldTopo := e.ObjectOld.(*plumberv1alpha1.Topology)
 				newTopo := e.ObjectNew.(*plumberv1alpha1.Topology)
 				return oldTopo.Status.NextRevision != newTopo.Status.NextRevision || oldTopo.Status.ActiveRevision != newTopo.Status.ActiveRevision
+			default:
+				return true
 			}
-			return true
 		},
 	}
 }
@@ -70,7 +74,7 @@ func (s *Syncer) SetupWithManager(mgr ctrl.Manager) error {
 			},
 			handler.EnqueueRequestsFromMapFunc(topoToactiveRevisionMapper),
 		).
-		WithEventFilter(syncerUpdaterFilters()).
+		WithEventFilter(syncerUpdaterFilters(mgr.GetScheme())).
 		Complete(s)
 }
 

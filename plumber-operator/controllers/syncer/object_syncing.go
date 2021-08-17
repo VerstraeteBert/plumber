@@ -3,10 +3,12 @@ package syncer
 import (
 	"context"
 	"fmt"
+	"hash/fnv"
 
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-logr/logr"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
@@ -24,6 +26,22 @@ type syncerHandler struct {
 	topology       plumberv1alpha1.Topology
 	Log            logr.Logger
 	Scheme         *runtime.Scheme
+}
+
+const (
+	hashLabel string = "plumber.ugent.be/hash"
+)
+
+func hashObject(object interface{}) string {
+	hf := fnv.New32()
+	printer := spew.ConfigState{
+		Indent:         " ",
+		SortKeys:       true,
+		DisableMethods: true,
+		SpewKeys:       true,
+	}
+	_, _ = printer.Fprintf(hf, "%#v", object)
+	return fmt.Sprint(hf.Sum32())
 }
 
 func (sh *syncerHandler) reconcileProcessors() error {
@@ -106,25 +124,65 @@ func (sh *syncerHandler) reconcileProcessors() error {
 		} else {
 			procKRefs := sh.buildProcessorKafkaRefs(pName, proc)
 			sidecarConfig := sh.buildSidecarConfig(pName, procKRefs)
-			deployment := sh.generateDeployment(pName, proc, sidecarConfig)
+			desiredDeployment := sh.generateDeployment(pName, proc, sidecarConfig)
 			// safe to ignore the error
-			err := ctrl.SetControllerReference(&sh.activeRevision, &deployment, sh.Scheme)
+			err := ctrl.SetControllerReference(&sh.activeRevision, &desiredDeployment, sh.Scheme)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for deployment %s", deployment.Name))
+				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for deployment %s", desiredDeployment.GetName()))
 			}
-			err = sh.cClient.Patch(context.TODO(), &deployment, client.Apply, applyOpts...)
+			// TODO pull some of the determination code if a patch is needed into seperate functions
+			//		+ shared package for hashing specific methods: i.e. setHashLabel, getHashLabel, GenerateHashFromObject
+			depHash := hashObject(desiredDeployment)
+			desiredDeployment.Labels[hashLabel] = depHash
+			shouldPatch := false
+			var currDeploy appsv1.Deployment
+			err = sh.cClient.Get(context.TODO(), client.ObjectKeyFromObject(&desiredDeployment), &currDeploy)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to patch deployment for processor %s", pName))
+				// not found & any other error
+				shouldPatch = true
+			} else {
+				if currHash, exists := currDeploy.GetLabels()[hashLabel]; exists {
+					if currHash != depHash {
+						shouldPatch = true
+					}
+				} else {
+					shouldPatch = true
+				}
 			}
+			if shouldPatch {
+				err = sh.cClient.Patch(context.TODO(), &desiredDeployment, client.Apply, applyOpts...)
+				if err != nil {
+					return errors.Wrap(err, fmt.Sprintf("failed to patch deployment for processor %s", pName))
+				}
+			}
+
 			// reconcile scaled object (keda)
-			scaledObject := sh.generateScaledObject(pName, proc, procKRefs)
-			err = ctrl.SetControllerReference(&sh.activeRevision, &scaledObject, sh.Scheme)
+			shouldPatch = false
+			desiredScaledObject := sh.generateScaledObject(pName, proc, procKRefs)
+			err = ctrl.SetControllerReference(&sh.activeRevision, &desiredDeployment, sh.Scheme)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for scaledObject %s", scaledObject.Name))
+				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for scaledObject %s", desiredScaledObject.GetName()))
 			}
-			err = sh.cClient.Patch(context.TODO(), &scaledObject, client.Apply, applyOpts...)
+			scaledObjHash := hashObject(desiredScaledObject)
+			desiredScaledObject.Labels[hashLabel] = scaledObjHash
+			var currScaledObject kedav1alpha1.ScaledObject
+			err = sh.cClient.Get(context.TODO(), client.ObjectKeyFromObject(&desiredScaledObject), &currScaledObject)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to update scaled object for processor %s", pName))
+				shouldPatch = true
+			} else {
+				if currHash, exists := currScaledObject.GetLabels()[hashLabel]; exists {
+					if currHash != scaledObjHash {
+						shouldPatch = true
+					}
+				} else {
+					shouldPatch = true
+				}
+			}
+			if shouldPatch {
+				err = sh.cClient.Patch(context.TODO(), &desiredScaledObject, client.Apply, applyOpts...)
+				if err != nil {
+					return errors.Wrap(err, fmt.Sprintf("failed to update scaled object for processor %s", pName))
+				}
 			}
 		}
 	}
