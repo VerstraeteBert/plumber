@@ -314,6 +314,7 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 			partIds, err := gch.getPartitions(inputTopic)
 			if err != nil {
 				// TODO should depend on the actual error being thrown; brokers unavailable we can retry, a topic not existing will just put this in a constant retry loop
+				gch.Log.Error(err, "failed to get topic partitions", "topic", inputTopic)
 				shouldRequeue = true
 				continue
 			}
@@ -335,6 +336,10 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 					break
 				}
 				prodOffset := producerOffsets[part]
+				// special case when no message has been produced yet
+				if consOffset == -1 && prodOffset == 0 {
+					continue
+				}
 				if consOffset < prodOffset {
 					foundNonCatchUp = true
 				}
