@@ -495,14 +495,8 @@ func (in *TopologyStatus) DeepCopyInto(out *TopologyStatus) {
 	}
 	if in.PhasingOutRevisions != nil {
 		in, out := &in.PhasingOutRevisions, &out.PhasingOutRevisions
-		*out = make([]*int64, len(*in))
-		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(int64)
-				**out = **in
-			}
-		}
+		*out = make([]int64, len(*in))
+		copy(*out, *in)
 	}
 	if in.Status != nil {
 		in, out := &in.Status, &out.Status

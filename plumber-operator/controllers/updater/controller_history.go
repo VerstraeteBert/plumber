@@ -2,7 +2,9 @@ package updater
 
 import (
 	"context"
+
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
+	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -12,7 +14,7 @@ import (
 func (u *Updater) listTopologyRevisions() (map[int64]*plumberv1alpha1.TopologyRevision, error) {
 	// List all TopologyRevisions in the namespace that match the selector
 	var revisionList = new(plumberv1alpha1.TopologyRevisionList)
-	selector := labels.SelectorFromSet(labels.Set(map[string]string{RevisionManagedByLabel: u.topology.GetName()}))
+	selector := labels.SelectorFromSet(labels.Set(map[string]string{shared.ManagedByLabel: u.topology.GetName()}))
 	err := u.cClient.List(context.TODO(), revisionList, client.InNamespace(u.topology.GetNamespace()), client.MatchingLabelsSelector{Selector: selector})
 	if err != nil {
 		return nil, err

@@ -18,11 +18,13 @@ package main
 
 import (
 	"flag"
+	"os"
+
+	"github.com/VerstraeteBert/plumber-operator/controllers/garbage_collector"
 	"github.com/VerstraeteBert/plumber-operator/controllers/syncer"
 	"github.com/VerstraeteBert/plumber-operator/controllers/topologypart_revisions"
 	"github.com/VerstraeteBert/plumber-operator/controllers/updater"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -114,6 +116,21 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "TopologyPartRevisionHandler")
+		os.Exit(1)
+	}
+
+	kfkClients, err := garbage_collector.BuildKafkaClients()
+	if err != nil {
+		setupLog.Error(err, "failed to create kafkaclients")
+		os.Exit(1)
+	}
+	if err = (&garbage_collector.GarbageCollector{
+		UClient:    uClient,
+		CClient:    mgr.GetClient(),
+		Log:        ctrl.Log.WithName("plumber").WithName("GarbageCollector"),
+		KfkClients: kfkClients,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "GarbageCollector")
 		os.Exit(1)
 	}
 

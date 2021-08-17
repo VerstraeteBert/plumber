@@ -29,11 +29,6 @@ type Updater struct {
 	uClient  client.Client
 }
 
-const (
-	RevisionManagedByLabel string = "plumber.ugent.be/managed-by"
-	RevisionNumberLabel    string = "plumber.ugent.be/revision-number"
-)
-
 func (u *Updater) handle() (reconcile.Result, error) {
 	defer shared.Elapsed(u.Log, "updater loop")()
 	revisionHistory, err := u.listTopologyRevisions()
@@ -91,7 +86,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 					}, nil
 				}
 				currentTopo := u.topology.DeepCopy()
-				currentTopo.Status.PhasingOutRevisions = append(currentTopo.Status.PhasingOutRevisions, currentTopo.Status.ActiveRevision)
+				currentTopo.Status.PhasingOutRevisions = append(currentTopo.Status.PhasingOutRevisions, *currentTopo.Status.ActiveRevision)
 				currentTopo.Status.ActiveRevision = currentTopo.Status.NextRevision
 				currentTopo.Status.NextRevision = nil
 				err = u.cClient.Status().Patch(context.TODO(), currentTopo, client.MergeFrom(u.topology), &client.PatchOptions{FieldManager: FieldManager})
@@ -314,7 +309,7 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 		err := u.cClient.Get(context.TODO(),
 			client.ObjectKey{
 				Namespace: u.topology.Namespace,
-				Name:      "topologypart-" + topoPartRef.Name + "-revision-" + strconv.FormatInt(topoPartRef.Revision, 10),
+				Name:      shared.BuildTopoPartRevisionName(topoPartRef.Name, topoPartRef.Revision),
 			},
 			&topoPartControllerRev,
 		)
@@ -391,7 +386,8 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 			Name:      shared.BuildTopoRevisionName(u.topology.Name, revisionNumber),
 			Namespace: u.topology.Namespace,
 			Labels: map[string]string{
-				RevisionManagedByLabel: u.topology.GetName(),
+				shared.ManagedByLabel:      u.topology.GetName(),
+				shared.RevisionNumberLabel: strconv.FormatInt(revisionNumber, 10),
 			},
 		},
 		Spec:   revSpec,
