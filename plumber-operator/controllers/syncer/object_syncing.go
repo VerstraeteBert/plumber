@@ -62,7 +62,7 @@ func (sh *syncerHandler) reconcileProcessors() error {
 				Name:      desiredKfkTopic.Name,
 			}, &currentKfkTopic)
 
-			var shouldPatch bool
+			shouldPatch := false
 			if err != nil {
 				if !kerrors.IsNotFound(err) {
 					return err
@@ -77,7 +77,7 @@ func (sh *syncerHandler) reconcileProcessors() error {
 				// https://stackoverflow.com/questions/45497878/how-to-decrease-number-partitions-kafka-topic#:~:text=Apache%20Kafka%20doesn't%20support,of%20them%20means%20data%20loss.
 				// a method for lowering partitions is under proposal as of now though: https://cwiki.apache.org/confluence/display/KAFKA/KIP-694%3A+Support+Reducing+Partitions+for+Topics
 				// probably still a no-go to support it, for partition ordering, keys sake (if we ever get to implementing keyed messaging)
-				shouldPatch = desiredKfkTopic.Spec.Partitions >= currentKfkTopic.Spec.Partitions
+				shouldPatch = desiredKfkTopic.Spec.Partitions > currentKfkTopic.Spec.Partitions
 			}
 			if shouldPatch {
 				err = sh.cClient.Patch(context.TODO(), &desiredKfkTopic, client.Apply, applyOpts...)
@@ -126,17 +126,14 @@ func (sh *syncerHandler) reconcileProcessors() error {
 			sidecarConfig := sh.buildSidecarConfig(pName, procKRefs)
 			desiredDeployment := sh.generateDeployment(pName, proc, sidecarConfig)
 			// safe to ignore the error
-			err := ctrl.SetControllerReference(&sh.activeRevision, &desiredDeployment, sh.Scheme)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for deployment %s", desiredDeployment.GetName()))
-			}
+			_ = ctrl.SetControllerReference(&sh.activeRevision, &desiredDeployment, sh.Scheme)
 			// TODO pull some of the determination code if a patch is needed into seperate functions
 			//		+ shared package for hashing specific methods: i.e. setHashLabel, getHashLabel, GenerateHashFromObject
 			depHash := hashObject(desiredDeployment)
 			desiredDeployment.Labels[hashLabel] = depHash
 			shouldPatch := false
 			var currDeploy appsv1.Deployment
-			err = sh.cClient.Get(context.TODO(), client.ObjectKeyFromObject(&desiredDeployment), &currDeploy)
+			err := sh.cClient.Get(context.TODO(), client.ObjectKeyFromObject(&desiredDeployment), &currDeploy)
 			if err != nil {
 				// not found & any other error
 				shouldPatch = true
@@ -159,10 +156,7 @@ func (sh *syncerHandler) reconcileProcessors() error {
 			// reconcile scaled object (keda)
 			shouldPatch = false
 			desiredScaledObject := sh.generateScaledObject(pName, proc, procKRefs)
-			err = ctrl.SetControllerReference(&sh.activeRevision, &desiredDeployment, sh.Scheme)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to set ownerreference for scaledObject %s", desiredScaledObject.GetName()))
-			}
+			_ = ctrl.SetControllerReference(&sh.activeRevision, &desiredScaledObject, sh.Scheme)
 			scaledObjHash := hashObject(desiredScaledObject)
 			desiredScaledObject.Labels[hashLabel] = scaledObjHash
 			var currScaledObject kedav1alpha1.ScaledObject

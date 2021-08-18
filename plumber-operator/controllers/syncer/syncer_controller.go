@@ -6,6 +6,7 @@ import (
 
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
+	strimziv1beta1 "github.com/VerstraeteBert/plumber-operator/vendor-api/strimzi/v1beta1"
 	"github.com/go-logr/logr"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
@@ -40,7 +41,22 @@ func syncerUpdaterFilters(scheme *runtime.Scheme) predicate.Predicate {
 			case "Topology":
 				oldTopo := e.ObjectOld.(*plumberv1alpha1.Topology)
 				newTopo := e.ObjectNew.(*plumberv1alpha1.Topology)
-				return oldTopo.Status.NextRevision != newTopo.Status.NextRevision || oldTopo.Status.ActiveRevision != newTopo.Status.ActiveRevision
+				if oldTopo.Status.NextRevision == nil && newTopo.Status.NextRevision != nil {
+					return true
+				}
+				if oldTopo.Status.ActiveRevision == nil && newTopo.Status.ActiveRevision != nil {
+					return true
+				}
+
+				if (oldTopo.Status.ActiveRevision != nil && newTopo.Status.ActiveRevision != nil) && *oldTopo.Status.ActiveRevision != *newTopo.Status.ActiveRevision {
+					return true
+				}
+
+				if (oldTopo.Status.NextRevision != nil && newTopo.Status.NextRevision != nil) && *oldTopo.Status.NextRevision != *newTopo.Status.NextRevision {
+					return true
+				}
+
+				return false
 			default:
 				return true
 			}
@@ -67,6 +83,7 @@ func (s *Syncer) SetupWithManager(mgr ctrl.Manager) error {
 		For(&plumberv1alpha1.TopologyRevision{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&kedav1alpha1.ScaledObject{}).
+		Owns(&strimziv1beta1.KafkaTopic{}).
 		Watches(
 			&source.Kind{
 				Type: &plumberv1alpha1.Topology{},

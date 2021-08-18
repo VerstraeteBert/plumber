@@ -29,14 +29,29 @@ type Updater struct {
 	uClient  client.Client
 }
 
-func (u *Updater) handle() (reconcile.Result, error) {
+func (u *Updater) handleTopoDeleted() (reconcile.Result, error) {
+	revs, err := u.listTopologyRevisions()
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	err = u.pruneRevisions(revs, false)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	return reconcile.Result{}, nil
+}
+
+func (u *Updater) handleTopoExists() (reconcile.Result, error) {
 	defer shared.Elapsed(u.Log, "updater loop")()
 	revisionHistory, err := u.listTopologyRevisions()
 	if err != nil {
 		u.Log.Error(err, "failed to list topology revisions")
 		return reconcile.Result{}, err
 	}
-	_ = u.pruneRevisions()
+	err = u.pruneRevisions(revisionHistory, true)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
 	nextRevNum := getNextRevisionNumber(revisionHistory)
 	u.Log.Info(fmt.Sprintf("new revision number: %d", nextRevNum))
 	newRevision, err := u.revisionFromTopologyWithDefaults(nextRevNum)
@@ -46,8 +61,8 @@ func (u *Updater) handle() (reconcile.Result, error) {
 	// ActiveRevision & NextRevision are pointers
 	isActiveRevisionSet := u.topology.Status.ActiveRevision != nil
 	isNextRevisionSet := u.topology.Status.NextRevision != nil
-	var activeRevision *plumberv1alpha1.TopologyRevision
-	var nextRevision *plumberv1alpha1.TopologyRevision
+	var activeRevision plumberv1alpha1.TopologyRevision
+	var nextRevision plumberv1alpha1.TopologyRevision
 	if isActiveRevisionSet {
 		u.Log.Info("active revision set")
 		activeRevision, isActiveRevisionSet = revisionHistory[*u.topology.Status.ActiveRevision]
@@ -72,10 +87,8 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			// 	 2. persist new revision
 			//   3. set new revision to be next
 			//   4. requeue immediately
-			if //goland:noinspection GoNilness
-			newRevision.SemanticallyEqual(*nextRevision) {
-				//goland:noinspection GoNilness
-				readyForPhaseOut, err := u.checkActiveRevisionReadyForPhaseOut(*activeRevision)
+			if newRevision.SemanticallyEqual(nextRevision) {
+				readyForPhaseOut, err := u.checkActiveRevisionReadyForPhaseOut(activeRevision)
 				if err != nil {
 					return reconcile.Result{}, errors.Wrap(err, "failed to check if active revision was ready for phase out")
 				}
@@ -100,10 +113,9 @@ func (u *Updater) handle() (reconcile.Result, error) {
 				}
 				return reconcile.Result{}, nil
 			}
-			//goland:noinspection GoNilness
-			propagateCGs(&newRevision, *activeRevision)
+			propagateCGs(&newRevision, activeRevision)
 			// TODO check if last persisted revision == new, skip persisting otherwise
-			err := u.persistTopologyRevision(&newRevision)
+			err := u.persistTopologyRevision(newRevision)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
@@ -128,8 +140,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//   persist new revision
 			//   unset next, set new to active
 			//   done
-			if //goland:noinspection GoNilness
-			newRevision.SemanticallyEqual(*nextRevision) {
+			if newRevision.SemanticallyEqual(nextRevision) {
 				currentTopo := u.topology.DeepCopy()
 				currentTopo.Status.ActiveRevision = currentTopo.Status.NextRevision
 				currentTopo.Status.NextRevision = nil
@@ -145,7 +156,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 				return reconcile.Result{}, nil
 			}
 			// TODO check if last persisted revision == new, skip persisting otherwise
-			err := u.persistTopologyRevision(&newRevision)
+			err := u.persistTopologyRevision(newRevision)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
@@ -174,16 +185,13 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			//  2. persist new revision
 			//  3. set new revision to be next
 			//  4. requeue after 10 -> branch where active and next are set will be taken
-			if //goland:noinspection GoNilness
-			newRevision.SemanticallyEqual(*activeRevision) {
+			if newRevision.SemanticallyEqual(activeRevision) {
 				u.Log.Info("revisions are equal!")
 				return reconcile.Result{}, nil
 			}
-			// activeRev can't be nil
-			//goland:noinspection GoNilness
-			propagateCGs(&newRevision, *activeRevision)
+			propagateCGs(&newRevision, activeRevision)
 			// TODO check if last persisted revision == new, skip persisting otherwise
-			err := u.persistTopologyRevision(&newRevision)
+			err := u.persistTopologyRevision(newRevision)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
@@ -207,7 +215,7 @@ func (u *Updater) handle() (reconcile.Result, error) {
 			// 2. persist new revision
 			// 3. set new revision as active
 			// TODO check if last persisted revision == new, skip persisting otherwise
-			err := u.persistTopologyRevision(&newRevision)
+			err := u.persistTopologyRevision(newRevision)
 			if err != nil {
 				return reconcile.Result{}, err
 			}

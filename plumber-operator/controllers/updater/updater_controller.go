@@ -29,13 +29,24 @@ func (u *UpdaterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	logger := u.Log.WithValues("Topology", req.NamespacedName)
 
 	var crdTopo plumberv1alpha1.Topology
-	if err := u.Get(ctx, req.NamespacedName, &crdTopo); err != nil {
+	if err := u.UClient.Get(ctx, req.NamespacedName, &crdTopo); err != nil {
 		if kerrors.IsNotFound(err) {
-			logger.Info("Topology object not found. Ignoring since object must be deleted.")
-			return ctrl.Result{}, nil
+			logger.Info("topology object not found, must be deleted. Ensuring all owned TopologyRevisions are finalized")
+			mockTopo := plumberv1alpha1.Topology{}
+			mockTopo.SetNamespace(req.NamespacedName.Namespace)
+			mockTopo.SetName(req.NamespacedName.Name)
+			rvh := Updater{
+				cClient:  u.Client,
+				topology: &mockTopo,
+				scheme:   u.Scheme,
+				Log:      logger,
+				uClient:  u.UClient,
+			}
+
+			return rvh.handleTopoDeleted()
 		}
 		// requeue on any other error
-		return ctrl.Result{}, errors.Wrap(err, fmt.Sprintf("Failed to get Topology %s", req.String()))
+		return ctrl.Result{}, errors.Wrap(err, fmt.Sprintf("failed to get Topology %s", req.String()))
 	}
 
 	rvh := Updater{
@@ -45,7 +56,7 @@ func (u *UpdaterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		Log:      logger,
 		uClient:  u.UClient,
 	}
-	return rvh.handle()
+	return rvh.handleTopoExists()
 }
 
 // SetupWithManager sets up the controller with the Manager.
