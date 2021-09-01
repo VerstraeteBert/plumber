@@ -51,6 +51,6 @@ func main() {
 		} else {
 			fmt.Println("Sent msg to partition:", part, ", offset:", offset)
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(1 * time.Millisecond)
 	}
 }

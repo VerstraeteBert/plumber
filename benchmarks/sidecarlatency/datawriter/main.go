@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -36,7 +35,7 @@ func main() {
 	inputTopic := os.Getenv("INPUT_TOPIC")
 	fileName := os.Getenv("FILE_NAME")
 
-	log.Println("Starting a new Sarama consumer")
+	//log.Println("Starting a new Sarama consumer")
 	configConsumer := sarama.NewConfig()
 	configConsumer.Version = sarama.V2_7_0_0
 	configConsumer.Consumer.Offsets.Initial = sarama.OffsetNewest
@@ -72,7 +71,7 @@ func main() {
 	}()
 
 	<-consumer.ready // Await till the consumer has been set up
-	log.Println("Sarama consumer up and running!...")
+	//log.Println("Sarama consumer up and running!...")
 
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
@@ -96,24 +95,25 @@ func (c *Consumer) msgHandler(ctx context.Context, cm *sarama.ConsumerMessage) e
 	valEnd := time.Now().UnixNano()
 	diffMs := float64(valEnd-valBegin) / float64(1e+6)
 	//fmt.Printf("Sender timestamp: %d; kafka timestamp: %d; diff in nano: %d, diff in ms: %f\n", valBegin, valEnd, valEnd-valBegin, diffMs)
-	c.outBuffer = append(c.outBuffer, fmt.Sprintf("%s,%s,%s\n", strconv.FormatInt(valBegin, 10), strconv.FormatInt(valEnd, 10), fmt.Sprintf("%.6f", diffMs)))
-	if len(c.outBuffer) >= 100 {
-		start := time.Now()
-		// flush
-		file, err := os.OpenFile("/bench/"+c.fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatalf("failed creating file: %s", err)
-		}
-		datawriter := bufio.NewWriter(file)
-		for _, data := range c.outBuffer {
-			_, _ = datawriter.WriteString(data)
-		}
-		datawriter.Flush()
-		file.Close()
-		c.outBuffer = make([]string, 0)
-		elapsed := time.Since(start)
-		log.Printf("Writing took %s", elapsed)
-	}
+	fmt.Printf("%s,%s,%s\n", strconv.FormatInt(valBegin, 10), strconv.FormatInt(valEnd, 10), fmt.Sprintf("%.6f", diffMs))
+	// c.outBuffer = append(c.outBuffer, fmt.Sprintf("%s,%s,%s\n", strconv.FormatInt(valBegin, 10), strconv.FormatInt(valEnd, 10), fmt.Sprintf("%.6f", diffMs)))
+	// if len(c.outBuffer) >= 100 {
+	// 	start := time.Now()
+	// 	// flush
+	// 	file, err := os.OpenFile("/bench/"+c.fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// 	if err != nil {
+	// 		log.Fatalf("failed creating file: %s", err)
+	// 	}
+	// 	datawriter := bufio.NewWriter(file)
+	// 	for _, data := range c.outBuffer {
+	// 		_, _ = datawriter.WriteString(data)
+	// 	}
+	// 	datawriter.Flush()
+	// 	file.Close()
+	// 	c.outBuffer = make([]string, 0)
+	// 	elapsed := time.Since(start)
+	// 	log.Printf("Writing took %s", elapsed)
+	// }
 	return nil
 }
 
