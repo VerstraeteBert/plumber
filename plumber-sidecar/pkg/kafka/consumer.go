@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+
 	"github.com/Shopify/sarama"
 	"github.com/VerstraeteBert/plumber-sidecar/pkg/config"
 	"go.uber.org/zap"
@@ -15,7 +16,7 @@ const (
 
 type Consumer struct {
 	inputTopic    string
-	brokers       []string
+	bootstrap     []string
 	consumerGroup string
 	callback      func(context.Context, *sarama.ConsumerMessage) (bool, error)
 
@@ -47,11 +48,11 @@ func (k *Kafka) initConsumer(cfg *config.Config) error {
 		ready:         make(chan bool),
 		saramaCfg:     saramaCfg,
 		inputTopic:    cfg.InputRef.Topic,
-		brokers:       cfg.InputRef.Brokers,
+		bootstrap:     cfg.InputRef.Bootstrap,
 		consumerGroup: cfg.InputRef.ConsumerGroup,
 	}
 
-	cgClient, err := sarama.NewConsumerGroup(k.Consumer.brokers, k.Consumer.consumerGroup, k.Consumer.saramaCfg)
+	cgClient, err := sarama.NewConsumerGroup(k.Consumer.bootstrap, k.Consumer.consumerGroup, k.Consumer.saramaCfg)
 	if err != nil {
 		return err
 	}

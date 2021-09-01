@@ -31,17 +31,13 @@ type TopologyPartSpec struct {
 }
 
 type Source struct {
-	// +kubebuilder:validation:Enum=Kafka;Custom
-	Type    string `json:"type"`
-	Brokers string `json:"brokers"`
-	Topic   string `json:"topic"`
+	Bootstrap string `json:"bootstrap"`
+	Topic     string `json:"topic"`
 }
 
 type Sink struct {
-	// +kubebuilder:validation:Enum=Kafka;Custom
-	Type    string `json:"type"`
-	Brokers string `json:"brokers"`
-	Topic   string `json:"topic"`
+	Bootstrap string `json:"bootstrap"`
+	Topic     string `json:"topic"`
 }
 
 type Processor struct {

@@ -1,17 +1,15 @@
 package syncer
 
 type confInputRef struct {
-	Topic string `json:"topic"`
-	// TODO FIXME in sidecar & here (brokers -> bootstrap) & test
-	Brokers       []string `json:"brokers"`
+	Topic         string   `json:"topic"`
+	Bootstrap     []string `json:"bootstrap"`
 	ConsumerGroup string   `json:"consumerGroup"`
 	InitialOffset string   `json:"initialOffset"`
 }
 
 type confOutputRef struct {
-	// TODO FIXME in sidecar & here (brokers -> bootstrap) & test
-	Topic   string   `json:"topic"`
-	Brokers []string `json:"brokers"`
+	Topic     string   `json:"topic"`
+	Bootstrap []string `json:"bootstrap"`
 }
 
 type confProcessorDetails struct {
@@ -29,14 +27,14 @@ func (sh *syncerHandler) buildSidecarConfig(pName string, refs processorKafkaRef
 	confOutputRefs := make([]confOutputRef, 0)
 	for _, o := range refs.outputRefs {
 		confOutputRefs = append(confOutputRefs, confOutputRef{
-			Topic:   o.topic,
-			Brokers: o.bootstrapServers,
+			Topic:     o.topic,
+			Bootstrap: o.bootstrapServers,
 		})
 	}
 	return SidecarConfig{
 		InputRef: confInputRef{
 			Topic:         refs.inputRef.topic,
-			Brokers:       refs.inputRef.bootstrapServers,
+			Bootstrap:     refs.inputRef.bootstrapServers,
 			ConsumerGroup: refs.inputRef.consumerGroup,
 			InitialOffset: refs.inputRef.initialOffset,
 		},

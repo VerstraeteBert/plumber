@@ -77,37 +77,25 @@ spec:
               sinks:
                 additionalProperties:
                   properties:
-                    brokers:
+                    bootstrap:
                       type: string
                     topic:
                       type: string
-                    type:
-                      enum:
-                      - Kafka
-                      - Custom
-                      type: string
                   required:
-                  - brokers
+                  - bootstrap
                   - topic
-                  - type
                   type: object
                 type: object
               sources:
                 additionalProperties:
                   properties:
-                    brokers:
+                    bootstrap:
                       type: string
                     topic:
                       type: string
-                    type:
-                      enum:
-                      - Kafka
-                      - Custom
-                      type: string
                   required:
-                  - brokers
+                  - bootstrap
                   - topic
-                  - type
                   type: object
                 type: object
             type: object

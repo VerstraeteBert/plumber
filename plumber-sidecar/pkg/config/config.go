@@ -7,14 +7,14 @@ import (
 
 type confInputRef struct {
 	Topic         string   `json:"topic"`
-	Brokers       []string `json:"brokers"`
+	Bootstrap     []string `json:"bootstrap"`
 	ConsumerGroup string   `json:"consumerGroup"`
 	InitialOffset string   `json:"initialOffset"`
 }
 
 type confOutputRef struct {
-	Topic   string   `json:"topic"`
-	Brokers []string `json:"brokers"`
+	Topic     string   `json:"topic"`
+	Bootstrap []string `json:"bootstrap"`
 }
 
 type confProcessorDetails struct {
@@ -28,27 +28,7 @@ type Config struct {
 	ProcessorDetails confProcessorDetails `json:"processorDetails"`
 }
 
-// FIXME
-//func (c *Config) validate() error {
-//	if c.Topic == "" {
-//		return &InvalidConfigError{field: "topic"}
-//	}
-//
-//	if c.ConsumerGroup == "" {
-//		return &InvalidConfigError{field: "consumerGroup"}
-//	}
-//
-//	if len(c.Brokers) == 0 {
-//		return &InvalidConfigError{field: "consumerGroup"}
-//	}
-//
-//	if len(c.OutputTopics) == 0 {
-//		return &InvalidConfigError{field: "outputTopics"}
-//	}
-//
-//	return nil
-//}
-
+// FIXME validation
 func ReadConfig() (Config, error) {
 	jsonConf := []byte(os.Getenv("PLUMBER_CONFIG"))
 	confObj := Config{}

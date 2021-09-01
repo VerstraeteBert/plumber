@@ -5,15 +5,12 @@ metadata:
 spec:
   sources:
     kafka-ingress:
-      type: Kafka
-      brokers: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
+      bootstrap: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
       topic: kafka-ingress-0
   sinks:
     kafka-egress-0:
-      type: Kafka
-      brokers: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
+      bootstrap: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
       topic: kafka-egress-0
     kafka-egress-1:
-      type: Kafka
-      brokers: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
+      bootstrap: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
       topic: kafka-egress-1

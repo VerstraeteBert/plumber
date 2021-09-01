@@ -3,14 +3,15 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/Shopify/sarama"
 	"github.com/VerstraeteBert/plumber-sidecar/pkg/config"
 	"github.com/VerstraeteBert/plumber-sidecar/pkg/util"
 	"github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2"
 	"github.com/cloudevents/sdk-go/v2/binding"
 	"go.uber.org/zap"
-	"sort"
-	"strings"
 )
 
 type Producer struct {
@@ -88,8 +89,8 @@ func (k *Kafka) initProducer(config *config.Config) error {
 	brokersToTopicsMap := make(map[string]*util.Set)
 	for _, outRef := range config.ConfOutputRefs {
 		// sort first to ensure that equality even if user specified brokers in different order
-		sort.Strings(outRef.Brokers)
-		brokersStr := strings.Join(outRef.Brokers, ",")
+		sort.Strings(outRef.Bootstrap)
+		brokersStr := strings.Join(outRef.Bootstrap, ",")
 
 		if set, found := brokersToTopicsMap[brokersStr]; found {
 			set.Add(outRef.Topic)

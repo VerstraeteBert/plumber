@@ -3,6 +3,10 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	nethttp "net/http"
+	"time"
+
 	"github.com/Shopify/sarama"
 	"github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -10,9 +14,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"io/ioutil"
-	nethttp "net/http"
-	"time"
 )
 
 type MessageHandler struct {
@@ -21,9 +22,15 @@ type MessageHandler struct {
 }
 
 func NewMessageHandler(forwarder func(context.Context, binding.Message) error) *MessageHandler {
+	defaultRoundTripper := nethttp.DefaultTransport
+	defaultTransportPointer, _ := defaultRoundTripper.(*nethttp.Transport)
+	transport := (*defaultTransportPointer).Clone()
+	transport.MaxIdleConns = 100
+	transport.MaxIdleConnsPerHost = 100
+
 	return &MessageHandler{
 		forwarder:  forwarder,
-		httpClient: nethttp.DefaultClient,
+		httpClient: &nethttp.Client{Transport: transport},
 	}
 }
 

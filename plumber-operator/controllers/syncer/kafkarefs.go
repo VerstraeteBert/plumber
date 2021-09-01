@@ -24,7 +24,7 @@ func (sh *syncerHandler) buildProcessorKafkaRefs(pName string, processor plumber
 	// build input ref
 	if inputSource, takesInputFromSource := sh.activeRevision.Spec.Sources[processor.InputFrom]; takesInputFromSource {
 		kRefs.inputRef = kafkaRef{
-			bootstrapServers: strings.Split(inputSource.Brokers, ","),
+			bootstrapServers: strings.Split(inputSource.Bootstrap, ","),
 			topic:            inputSource.Topic,
 			consumerGroup:    processor.Internal.ConsumerGroup,
 			initialOffset:    processor.Internal.InitialOffset,
@@ -52,7 +52,7 @@ func (sh *syncerHandler) buildProcessorKafkaRefs(pName string, processor plumber
 		for _, sinkBinding := range strings.Split(processor.SinkBindings, ",") {
 			outputSink := sh.activeRevision.Spec.Sinks[sinkBinding]
 			kRefs.outputRefs = append(kRefs.outputRefs, kafkaRef{
-				bootstrapServers: strings.Split(outputSink.Brokers, ","),
+				bootstrapServers: strings.Split(outputSink.Bootstrap, ","),
 				topic:            outputSink.Topic,
 			})
 		}
