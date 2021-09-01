@@ -16,6 +16,7 @@ limitations under the License.
 
 // Package v1beta1 contains API Schema definitions for the strimzi v1beta1 API group
 //+kubebuilder:object:generate=true
+//+kubebuilder:skip
 //+groupName=kafka.strimzi.io
 package v1beta1
 
