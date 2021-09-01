@@ -52,7 +52,7 @@ The operator is bundled with [a script](./plumber-operator/hack/cluster-setup/se
 plumber-operator/hack/cluster-setup/setup-testing-env.sh
 ```
 
-### Installing the CRD
+### Installing the CRDs
 
 Run the following in the operator root directory.
 
@@ -66,6 +66,26 @@ Afterwards, `kubectl apply -f` the resulting CRDs in the directory `config/crd/b
 ```shell
 kubectl apply -f config/crd/bases/plumber.ugent.be_topologies.yaml
 kubectl apply -f config/crd/bases/plumber.ugent.be_topologyparts.yaml
+kubectl apply -f config/crd/bases/plumber.ugent.be_topologyrevisions.yaml
+```
+
+### Local development prep
+
+The controllers needs to have access to the Kubernetes cluster's DNS to function (i.e. to access the Kafka Cluster), to enable local development [Telepresence](https://www.telepresence.io/) may be used.
+
+First, install telepresence (instructions below are for Linux).
+
+```shell
+# 1. Download the latest binary (~50 MB):
+sudo curl -fL https://app.getambassador.io/download/tel2/linux/amd64/latest/telepresence -o /usr/local/bin/telepresence
+# 2. Make the binary executable:
+sudo chmod a+x /usr/local/bin/telepresence
+```
+
+Secondly, connect your local workstation to a (remote) Kubernetes cluster.
+
+```shell
+telepresence connect
 ```
 
 ### Running the operator
