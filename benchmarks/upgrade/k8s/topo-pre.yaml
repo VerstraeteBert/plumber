@@ -1,0 +1,10 @@
+apiVersion: plumber.ugent.be/v1alpha1
+kind: Topology
+metadata:
+  name: upgrade-bench
+spec:
+  parts:
+    - name: upgrade-part
+      revision: 1
+  defaultScale: 3
+  

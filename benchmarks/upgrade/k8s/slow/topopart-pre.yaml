@@ -1,0 +1,23 @@
+apiVersion: plumber.ugent.be/v1alpha1
+kind: TopologyPart
+metadata:
+  name: upgrade-part
+spec:
+  sources:
+    upgrade-input:
+      bootstrap: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
+      topic: upgrade-input
+  processors:
+    transformer-input:
+      inputFrom: upgrade-input
+      image: "verstraetebert/plumber-parrot:v0.0.2"
+      env:
+        - name: VERSION
+          value: "2"
+        - name: SLEEP_TIME
+          value: "0.75"
+      sinkBindings: upgrade-output
+  sinks:
+    upgrade-output:
+      bootstrap: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
+      topic: upgrade-output
