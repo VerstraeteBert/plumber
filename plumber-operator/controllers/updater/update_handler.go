@@ -309,9 +309,9 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 		Processors: make(map[string]plumberv1alpha1.ComposedProcessor),
 		Revision:   revisionNumber,
 	}
-	// helper structure to determine partitions needed for outputTopics
-	connectedProcessorsMaxScale := make(map[string]int)
-	// combine information from all referenced topologyparts
+
+	// combine all parts into a single revision (source/sinks as is, processors need some extra generated details)
+	allProcessors := make(map[string]plumberv1alpha1.Processor)
 	for _, topoPartRef := range u.topology.Spec.Parts {
 		var topoPartControllerRev appsv1.ControllerRevision
 		err := u.cClient.Get(context.TODO(),
@@ -331,51 +331,59 @@ func (u *Updater) revisionFromTopologyWithDefaults(revisionNumber int64) (plumbe
 			Version: "v1alpha1",
 			Kind:    "TopologyPart",
 		}, &topoPart)
+
 		for name, source := range topoPart.Spec.Sources {
 			revSpec.Sources[name] = source
 		}
 		for name, sink := range topoPart.Spec.Sinks {
 			revSpec.Sinks[name] = sink
 		}
-		// InternalProcDetails
-		// initialOffset
-		//		default: if connected to processor -> earliest
-		//				 if connected to source -> respect supplied initialOffset value if it is not set or "continue" -> latest
-		// consumerGroup
-		//		set default here
-		//		later pass which takes into account the active revision may overwrite this if initialOffset == "continue"
-		// outputTopic:
-		//		first detect if it is needed: if any processor takes input from it
-		//				if so: identify largest MaxScale of an immediate successor processor as the number of partitions (using connectedProcessorScales as a helper datastructure)
-		for name, proc := range topoPart.Spec.Processors {
-			initialOffset := proc.InitialOffset
-			if _, takesInputFromSource := revSpec.Sources[proc.InputFrom]; takesInputFromSource {
-				if proc.InitialOffset == "" || proc.InitialOffset == shared.OffsetContinue {
-					initialOffset = shared.OffsetLatest
-				}
+		for name, processor := range topoPart.Spec.Processors {
+			allProcessors[name] = processor
+		}
+	}
+
+	// InternalProcDetails
+	// initialOffset
+	//		default: if connected to processor -> earliest
+	//				 if connected to source -> respect supplied initialOffset value if it is not set or "continue" -> latest
+	// consumerGroup
+	//		set default here
+	//		later pass which takes into account the active revision may overwrite this if initialOffset == "continue"
+	// outputTopic:
+	//		first detect if it is needed: if any processor takes input from it
+	//				if so: identify largest MaxScale of an immediate successor processor as the number of partitions (using connectedProcessorScales as a helper datastructure)
+	// helper structure to determine partitions needed for outputTopics
+	connectedProcessorsMaxScale := make(map[string]int)
+	for name, proc := range allProcessors {
+		initialOffset := proc.InitialOffset
+		if _, takesInputFromSource := revSpec.Sources[proc.InputFrom]; takesInputFromSource {
+			if proc.InitialOffset == "" || proc.InitialOffset == shared.OffsetContinue {
+				initialOffset = shared.OffsetLatest
+			}
+		} else {
+			// takes input from processor
+			initialOffset = shared.OffsetEarliest
+			// partition calcs
+			procMaxScale := proc.GetMaxScaleOrDefault()
+
+			if currMaxMaxScale, found := connectedProcessorsMaxScale[proc.InputFrom]; found {
+				connectedProcessorsMaxScale[proc.InputFrom] = shared.MaxInt(currMaxMaxScale, procMaxScale)
 			} else {
-				// takes input from processor
-				initialOffset = shared.OffsetEarliest
-				// partition calcs
-				procMaxScale := proc.GetMaxScaleOrDefault()
-				if currMaxMaxScale, found := connectedProcessorsMaxScale[proc.InputFrom]; found {
-					connectedProcessorsMaxScale[proc.InputFrom] = shared.MaxInt(currMaxMaxScale, procMaxScale)
-				} else {
-					connectedProcessorsMaxScale[proc.InputFrom] = procMaxScale
-				}
+				connectedProcessorsMaxScale[proc.InputFrom] = procMaxScale
 			}
-			revSpec.Processors[name] = plumberv1alpha1.ComposedProcessor{
-				InputFrom:     proc.InputFrom,
-				Image:         proc.Image,
-				MaxScale:      proc.MaxScale,
-				Env:           proc.Env,
-				SinkBindings:  proc.SinkBindings,
-				InitialOffset: proc.InitialOffset,
-				Internal: plumberv1alpha1.InternalProcDetails{
-					ConsumerGroup: u.topology.Namespace + "-" + u.topology.Name + "-" + name + "-" + strconv.FormatInt(revisionNumber, 10),
-					InitialOffset: initialOffset,
-				},
-			}
+		}
+		revSpec.Processors[name] = plumberv1alpha1.ComposedProcessor{
+			InputFrom:     proc.InputFrom,
+			Image:         proc.Image,
+			MaxScale:      proc.MaxScale,
+			Env:           proc.Env,
+			SinkBindings:  proc.SinkBindings,
+			InitialOffset: proc.InitialOffset,
+			Internal: plumberv1alpha1.InternalProcDetails{
+				ConsumerGroup: u.topology.Namespace + "-" + u.topology.Name + "-" + name + "-" + strconv.FormatInt(revisionNumber, 10),
+				InitialOffset: initialOffset,
+			},
 		}
 	}
 	for pName, reqOutPartitions := range connectedProcessorsMaxScale {
