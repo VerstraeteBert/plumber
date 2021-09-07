@@ -1,7 +1,7 @@
 apiVersion: plumber.ugent.be/v1alpha1
 kind: TopologyPart
 metadata:
-  name: branched-topo-scientist
+  name: revision-test-scientist
 spec:
   processors:
     transformer-input:

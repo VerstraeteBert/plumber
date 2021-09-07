@@ -4,8 +4,8 @@ metadata:
   name: revisiontesting
 spec:
   parts:
-    - name: branched-topo-engineer
+    - name: revision-test-engineer
       revision: 2 # should ideally default to the last created revision
-    - name: branched-topo-scientist
+    - name: revision-test-scientist
       revision: 2
   defaultScale: 5

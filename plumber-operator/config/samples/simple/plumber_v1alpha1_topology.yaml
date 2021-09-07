@@ -1,6 +1,11 @@
 apiVersion: plumber.ugent.be/v1alpha1
 kind: Topology
 metadata:
-  name: plumber-composed-topology
+  name: simple-topo
 spec:
+  parts:
+  - name: simple-topo-scientist
+    revision: 1
+  - name: simple-topo-engineer
+    revision: 1
   defaultScale: 5

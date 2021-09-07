@@ -1,7 +1,7 @@
 apiVersion: plumber.ugent.be/v1alpha1
 kind: TopologyPart
 metadata:
-  name: my-first-topo-engineer
+  name: two-step-engineer
 spec:
   sources:
     kafka-ingress:
