@@ -46,6 +46,7 @@ type Processor struct {
 	// +kubebuilder:default=5
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=100
+	// +optional
 	MaxScale *int `json:"maxScale"`
 	// +optional
 	Env []EnvVar `json:"env,omitempty"`
