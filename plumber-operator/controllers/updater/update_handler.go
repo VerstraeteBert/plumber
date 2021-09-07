@@ -42,7 +42,7 @@ func (u *Updater) handleTopoDeleted() (reconcile.Result, error) {
 }
 
 func (u *Updater) handleTopoExists() (reconcile.Result, error) {
-	defer shared.Elapsed(u.Log, "updater loop")()
+	//defer shared.Elapsed(u.Log, "updater loop")()
 	revisionHistory, err := u.listTopologyRevisions()
 	if err != nil {
 		u.Log.Error(err, "failed to list topology revisions")
@@ -111,7 +111,7 @@ func (u *Updater) handleTopoExists() (reconcile.Result, error) {
 						return reconcile.Result{}, errors.Wrap(err, "failed to patch topology status with new activeRevision when next set and active not set")
 					}
 				}
-				u.Log.Info(fmt.Sprintf("####%s,%s,%s,%s", currentTopo.GetName(), "markedActive", strconv.FormatInt(*currentTopo.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10)))
+				u.Log.Info(fmt.Sprintf("####%s,%s,%s,%s,%s", currentTopo.GetName(), "markedActive", strconv.FormatInt(*currentTopo.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10), ""))
 				return reconcile.Result{}, nil
 			}
 			propagateCGs(&newRevision, activeRevision)
@@ -207,7 +207,7 @@ func (u *Updater) handleTopoExists() (reconcile.Result, error) {
 					return reconcile.Result{}, errors.Wrap(err, "failed to patch topology status with new activeRevision when active set, next not set")
 				}
 			}
-			u.Log.Info(fmt.Sprintf("####%s,%s,%s,%s", currentTopo.GetName(), "markedNext", strconv.FormatInt(*currentTopo.Status.NextRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10)))
+			u.Log.Info(fmt.Sprintf("####%s,%s,%s,%s,%s", currentTopo.GetName(), "markedNext", strconv.FormatInt(*currentTopo.Status.NextRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10), ""))
 			return reconcile.Result{
 				RequeueAfter: time.Second * 5,
 			}, nil

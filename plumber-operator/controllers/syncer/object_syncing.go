@@ -49,7 +49,7 @@ func hashObject(object interface{}) string {
 func (sh *syncerHandler) reconcileProcessors() error {
 	// Generate and apply the desired for a given active Revision
 	// Important to note that if a nextRevision is set, the immediate dominators processors of a source are not reconciled (except for theeoutput topic)
-	defer shared.Elapsed(sh.Log, "Patching topo components")()
+	// defer shared.Elapsed(sh.Log, "Patching topo components")()
 	// Mark this controller as field owner on server side applies
 	// 1. first, create all output topics
 	hadToPatch := false
@@ -184,12 +184,12 @@ func (sh *syncerHandler) reconcileProcessors() error {
 				}
 			}
 		}
-		if hadToPatch {
-			sh.Log.Info(fmt.Sprintf("####%s,%s,%s,%s", sh.topology.GetName(), "activeObjectsCreated", strconv.FormatInt(*sh.topology.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10)))
-		}
-		if hadToDelete {
-			sh.Log.Info(fmt.Sprintf("####%s,%s,%s,%s", sh.topology.GetName(), "sourceConnectedDeleted", strconv.FormatInt(*sh.topology.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10)))
-		}
+	}
+	if hadToPatch {
+		sh.Log.Info(fmt.Sprintf("####%s,%s,%s,%s,%s", sh.topology.GetName(), "activeObjectsCreated", strconv.FormatInt(*sh.topology.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10), ""))
+	}
+	if hadToDelete {
+		sh.Log.Info(fmt.Sprintf("####%s,%s,%s,%s,%s", sh.topology.GetName(), "sourceConnectedDeleted", strconv.FormatInt(*sh.topology.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10), ""))
 	}
 	return nil
 }
