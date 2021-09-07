@@ -10,6 +10,7 @@ import (
 	"github.com/go-logr/logr"
 	kedav1alpha1 "github.com/kedacore/keda/v2/api/v1alpha1"
 	"github.com/pkg/errors"
+	"github.com/r3labs/diff/v2"
 	appsv1 "k8s.io/api/apps/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -47,16 +48,23 @@ func syncerUpdaterFilters(scheme *runtime.Scheme) predicate.Predicate {
 				if oldTopo.Status.ActiveRevision == nil && newTopo.Status.ActiveRevision != nil {
 					return true
 				}
-
 				if (oldTopo.Status.ActiveRevision != nil && newTopo.Status.ActiveRevision != nil) && *oldTopo.Status.ActiveRevision != *newTopo.Status.ActiveRevision {
 					return true
 				}
-
 				if (oldTopo.Status.NextRevision != nil && newTopo.Status.NextRevision != nil) && *oldTopo.Status.NextRevision != *newTopo.Status.NextRevision {
 					return true
 				}
-
 				return false
+			case "ScaledObject":
+				oldScale := e.ObjectOld.(*kedav1alpha1.ScaledObject)
+				newScale := e.ObjectNew.(*kedav1alpha1.ScaledObject)
+				changes, _ := diff.Diff(oldScale, newScale)
+				if len(changes) == 2 &&
+					len(changes[0].Path) == 2 && changes[0].Path[0] == "ObjectMeta" && changes[0].Path[1] == "ResourceVersion" &&
+					len(changes[1].Path) == 3 && changes[1].Path[0] == "Status" && changes[1].Path[1] == "LastActiveTime" {
+					return false
+				}
+				return true
 			default:
 				return true
 			}
