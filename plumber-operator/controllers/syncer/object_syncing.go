@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"hash/fnv"
+	"strconv"
+	"time"
 
 	plumberv1alpha1 "github.com/VerstraeteBert/plumber-operator/api/v1alpha1"
 	"github.com/VerstraeteBert/plumber-operator/controllers/shared"
@@ -50,6 +52,8 @@ func (sh *syncerHandler) reconcileProcessors() error {
 	defer shared.Elapsed(sh.Log, "Patching topo components")()
 	// Mark this controller as field owner on server side applies
 	// 1. first, create all output topics
+	hadToPatch := false
+	hadToDelete := false
 	applyOpts := []client.PatchOption{client.FieldOwner("plumber-syncer"), client.ForceOwnership}
 	for pName, proc := range sh.activeRevision.Spec.Processors {
 		if proc.HasOutputTopic() {
@@ -151,6 +155,7 @@ func (sh *syncerHandler) reconcileProcessors() error {
 				if err != nil {
 					return errors.Wrap(err, fmt.Sprintf("failed to patch deployment for processor %s", pName))
 				}
+				hadToPatch = true
 			}
 
 			// reconcile scaled object (keda)
@@ -178,6 +183,12 @@ func (sh *syncerHandler) reconcileProcessors() error {
 					return errors.Wrap(err, fmt.Sprintf("failed to update scaled object for processor %s", pName))
 				}
 			}
+		}
+		if hadToPatch {
+			sh.Log.Info(fmt.Sprintf("####%s,%s,%s,%s", sh.topology.GetName(), "activeObjectsCreated", strconv.FormatInt(*sh.topology.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10)))
+		}
+		if hadToDelete {
+			sh.Log.Info(fmt.Sprintf("####%s,%s,%s,%s", sh.topology.GetName(), "sourceConnectedDeleted", strconv.FormatInt(*sh.topology.Status.ActiveRevision, 10), strconv.FormatInt(time.Now().UnixNano(), 10)))
 		}
 	}
 	return nil
