@@ -142,7 +142,7 @@ func (sh *syncerHandler) determineProcessorStatus(newStatus *plumberv1alpha1.Top
 	}
 	deployStat, err := sh.deriveDeploymentReadyStatus(pName)
 	if err != nil {
-		sh.Log.Error(err, "failed to derive deployment status")
+		// only fails on fetching processor (which might not be in the cache yet), no need to be verbose about this
 		shouldRequeue = true
 	}
 	if deployStat != nil {
