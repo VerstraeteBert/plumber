@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -101,8 +102,16 @@ func (sh *syncerHandler) deriveDeploymentReadyStatus(pName string) (*metav1.Cond
 		Name:      shared.BuildProcessorDeployName(sh.topology.GetName(), pName, sh.activeRevision.Spec.Revision),
 	}, &deployment)
 	if err != nil {
-		// this shouldn't ever occur, since we just created the object successfully
-		// requeue if any error (notfound, anything else)
+		// if we cannot find the deployment at this point, the deployment has not yet been propagated to the cache
+		if kerrors.IsNotFound(err) {
+			return &metav1.Condition{
+				Type:    StatusDeploymentReady,
+				Status:  "Unknown",
+				Reason:  "CacheStale",
+				Message: "",
+			}, nil
+		}
+		// requeue on any other error
 		return nil, err
 	}
 	// deployment found, check condition available field
