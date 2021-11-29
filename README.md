@@ -5,10 +5,6 @@ Plumber provides a way to run a stateless serverless stream processing pipeline 
 Allowing its users to only focus on the processing logic and the topology structure,
 while plumber manages the lifecycle of the pipeline components, and the plumbing of the eventing mesh.
 
-Note: this is still an early prototype
-
-\* With possible message loss
-
 ## Concepts
 
 TODO
