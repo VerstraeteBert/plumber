@@ -373,7 +373,7 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 	}
 	shouldRequeue = shouldRequeue || len(newPhasingOutList) > 0
 	if shouldRequeue {
-		return reconcile.Result{RequeueAfter: time.Second * 30}, nil
+		return reconcile.Result{RequeueAfter: time.Second * 3}, nil
 	}
 	return reconcile.Result{}, nil
 }

@@ -10,13 +10,20 @@ spec:
   processors:
     transformer-input:
       inputFrom: upgrade-input
-      image: "verstraetebert/plumber-parrot:v0.0.2"
+      image: "verstraetebert/plumber-parrot:v0.0.3"
       env:
         - name: VERSION
-          value: "2"
-        - name: SLEEP_TIME
-          value: "0.75"
+          value: "1"
+    transformer-next:
+      inputFrom: transformer-input
       sinkBindings: upgrade-output
+      image: "verstraetebert/plumber-parrot:v0.0.3"
+      env:
+        - name: VERSION
+          value: "1"
+        - name: SLEEP_TIME
+          value: "0.300"
+      maxScale: 1
   sinks:
     upgrade-output:
       bootstrap: plumber-cluster-kafka-bootstrap.plumber-kafka:9092

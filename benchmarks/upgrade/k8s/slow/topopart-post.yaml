@@ -10,11 +10,18 @@ spec:
   processors:
     transformer-input:
       inputFrom: upgrade-input
-      image: "verstraetebert/plumber-parrot:v0.0.2"
+      image: "verstraetebert/plumber-parrot:v0.0.3"
       env:
         - name: VERSION
           value: "2"
+    transformer-next:
+      inputFrom: transformer-input
       sinkBindings: upgrade-output
+      image: "verstraetebert/plumber-parrot:v0.0.3"
+      env:
+        - name: VERSION
+          value: "2"
+      maxScale: 1
   sinks:
     upgrade-output:
       bootstrap: plumber-cluster-kafka-bootstrap.plumber-kafka:9092
