@@ -95,7 +95,7 @@ func (u *Updater) handleTopoExists() (reconcile.Result, error) {
 				if !readyForPhaseOut {
 					u.Log.Info("syncer has not yet completed phasing out preparation, requeuing")
 					return reconcile.Result{
-						RequeueAfter: time.Second * 5,
+						Requeue: true,
 					}, nil
 				}
 				currentTopo := u.topology.DeepCopy()
