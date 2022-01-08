@@ -281,7 +281,7 @@ func (sh *syncerHandler) determineGlobalStatus(newStatus *plumberv1alpha1.Topolo
 // 		-> this logic should possibly live in the actual object generation loop, where for each object, based on observations, actions are taken on the status & object itself
 // https://github.com/kubernetes/apimachinery/blob/master/pkg/api/meta/conditions.go
 func (sh *syncerHandler) updateActiveStatus() error {
-	defer shared.Elapsed(sh.Log, "Updating state")()
+	//defer shared.Elapsed(sh.Log, "Updating state")()
 
 	var newStat plumberv1alpha1.TopologyStatus
 	sh.topology.Status.DeepCopyInto(&newStat)

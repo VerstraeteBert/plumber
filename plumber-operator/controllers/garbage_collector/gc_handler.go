@@ -356,6 +356,8 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 				shouldRequeue = true
 				continue
 			}
+			gch.Log.Info(fmt.Sprintf("####%s,%s,%s,%s,%s", gch.topology.GetName(), "processorCollected", strconv.FormatInt(gch.topology.Status.PhasingOutRevisions[0], 10), strconv.FormatInt(time.Now().UnixNano(), 10), currProcName))
+
 			// 	2. enqueue sucessors of processor
 			workQueue = append(workQueue, getSuccessors(currProcName, topoRev.Spec.Processors)...)
 		}
@@ -367,10 +369,11 @@ func (gch *GarbageCollectorHandler) handle() (reconcile.Result, error) {
 			gch.Log.Error(err, "failed to persist new phasing out list")
 			shouldRequeue = true
 		}
+		gch.Log.Info(fmt.Sprintf("####%s,%s,%s,%s,%s", gch.topology.GetName(), "phaseOutCompleted", strconv.FormatInt(gch.topology.Status.PhasingOutRevisions[0], 10), strconv.FormatInt(time.Now().UnixNano(), 10), ""))
 	}
 	shouldRequeue = shouldRequeue || len(newPhasingOutList) > 0
 	if shouldRequeue {
-		return reconcile.Result{RequeueAfter: time.Second * 30}, nil
+		return reconcile.Result{RequeueAfter: time.Second * 3}, nil
 	}
 	return reconcile.Result{}, nil
 }

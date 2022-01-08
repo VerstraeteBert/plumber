@@ -1,0 +1,474 @@
+2021-12-05T14:47:23.172-0700	INFO	controller-runtime.metrics	metrics server is starting to listen	{"addr": ":8080"}
+2021-12-05T14:47:24.136-0700	INFO	setup	starting manager
+2021-12-05T14:47:24.136-0700	INFO	controller-runtime.manager	starting metrics server	{"path": "/metrics"}
+2021-12-05T14:47:24.136-0700	INFO	controller-runtime.manager.controller.topologyrevision	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.136-0700	INFO	controller-runtime.manager.controller.topology	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.136-0700	INFO	controller-runtime.manager.controller.topology	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.136-0700	INFO	controller-runtime.manager.controller.topologypart	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyPart", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.237-0700	INFO	controller-runtime.manager.controller.topologypart	Starting Controller	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyPart"}
+2021-12-05T14:47:24.237-0700	INFO	controller-runtime.manager.controller.topologypart	Starting workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyPart", "worker count": 1}
+2021-12-05T14:47:24.237-0700	INFO	controller-runtime.manager.controller.topologyrevision	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.237-0700	INFO	controller-runtime.manager.controller.topology	Starting Controller	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology"}
+2021-12-05T14:47:24.237-0700	INFO	controller-runtime.manager.controller.topology	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.237-0700	INFO	controller-runtime.manager.controller.topology	Starting Controller	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology"}
+2021-12-05T14:47:24.337-0700	INFO	controller-runtime.manager.controller.topology	Starting workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology", "worker count": 1}
+2021-12-05T14:47:24.338-0700	INFO	controller-runtime.manager.controller.topology	Starting workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology", "worker count": 1}
+2021-12-05T14:47:24.338-0700	INFO	controller-runtime.manager.controller.topologyrevision	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.343-0700	INFO	plumber.Updater	new revision number: 3	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:47:24.343-0700	INFO	plumber.Updater	active revision set	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:47:24.343-0700	INFO	plumber.Updater	revisions are equal!	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:47:24.438-0700	INFO	controller-runtime.manager.controller.topologyrevision	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.538-0700	INFO	controller-runtime.manager.controller.topologyrevision	Starting EventSource	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "source": "kind source: /, Kind="}
+2021-12-05T14:47:24.539-0700	INFO	controller-runtime.manager.controller.topologyrevision	Starting Controller	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision"}
+2021-12-05T14:47:24.539-0700	INFO	controller-runtime.manager.controller.topologyrevision	Starting workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "worker count": 1}
+2021-12-05T14:47:28.935-0700	INFO	plumber.Updater	topology object not found, must be deleted. Ensuring all owned TopologyRevisions are finalized	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:47:29.109-0700	INFO	plumber.Updater	topology object not found, must be deleted. Ensuring all owned TopologyRevisions are finalized	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:47:29.147-0700	INFO	plumber.Syncer	TopologyRevision object not found. Ignoring since object must be deleted.
+2021-12-05T14:47:29.151-0700	INFO	plumber.Updater	topology object not found, must be deleted. Ensuring all owned TopologyRevisions are finalized	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:47:29.420-0700	INFO	plumber.Syncer	TopologyRevision object not found. Ignoring since object must be deleted.
+2021-12-05T14:47:29.626-0700	INFO	plumber.Updater	topology object not found, must be deleted. Ensuring all owned TopologyRevisions are finalized	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:47:29.916-0700	INFO	plumber.Syncer	TopologyRevision object not found. Ignoring since object must be deleted.
+2021-12-05T14:47:30.431-0700	INFO	plumber.Syncer	TopologyRevision object not found. Ignoring since object must be deleted.
+2021-12-05T14:47:39.457-0700	INFO	plumber.TopologyPartRevisionHandler	TopologyPart object not found. Ignoring since object must be deleted.	{"topologypart": "default/upgrade-part"}
+2021-12-05T14:48:57.364-0700	INFO	plumber.Updater	new revision number: 1	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:48:57.491-0700	INFO	plumber.Updater	new revision number: 2	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:48:57.491-0700	INFO	plumber.Updater	active revision set	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:48:57.491-0700	INFO	plumber.Updater	revisions are equal!	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:48:57.516-0700	INFO	plumber.Syncer	####upgrade-bench,activeObjectsCreated,1,1638740937516969789,
+2021-12-05T14:49:51.262-0700	INFO	plumber.Updater	new revision number: 2	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:51.262-0700	INFO	plumber.Updater	active revision set	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:51.288-0700	INFO	plumber.Updater	####upgrade-bench,markedNext,2,1638740991288313614,	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:51.334-0700	INFO	plumber.Updater	new revision number: 3	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:51.335-0700	INFO	plumber.Updater	active revision set	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:51.335-0700	INFO	plumber.Updater	next revision set	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:51.357-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.357-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.488-0700	INFO	plumber.Updater	syncer has not yet completed phasing out preparation, requeuing	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:51.540-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.540-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.570-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.570-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.571-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.571-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.591-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.591-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.671-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.671-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.832-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:51.832-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:52.152-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:52.153-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:52.793-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:52.793-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:54.074-0700	ERROR	plumber.Syncer	failed to derive deployment status	{"error": "Deployment.apps \"plumber-upgrade-bench-transformer-input-1-deploy\" not found"}
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).determineProcessorStatuses
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:173
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*syncerHandler).updateActiveStatus
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/state_generation.go:284
+github.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile
+	/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:162
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:54.074-0700	ERROR	controller-runtime.manager.controller.topologyrevision	Reconciler error	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision", "name": "topology-upgrade-bench-revision-1", "namespace": "default", "error": "failed to update status based on active revision: something went wrong while updating state", "errorVerbose": "something went wrong while updating state\nfailed to update status based on active revision\ngithub.com/VerstraeteBert/plumber-operator/controllers/syncer.(*Syncer).Reconcile\n\t/home/brgverst/plumber/plumber-operator/controllers/syncer/syncer_controller.go:164\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).reconcileHandler\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:263\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235\nsigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1\n\t/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155\nk8s.io/apimachinery/pkg/util/wait.BackoffUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156\nk8s.io/apimachinery/pkg/util/wait.JitterUntil\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133\nk8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185\nk8s.io/apimachinery/pkg/util/wait.UntilWithContext\n\t/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99\nruntime.goexit\n\t/home/brgverst/.gvm/gos/go1.15.8/src/runtime/asm_amd64.s:1374"}
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).processNextWorkItem
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:235
+sigs.k8s.io/controller-runtime/pkg/internal/controller.(*Controller).Start.func1.1
+	/home/brgverst/go/pkg/mod/sigs.k8s.io/controller-runtime@v0.7.2/pkg/internal/controller/controller.go:198
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil.func1
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:155
+k8s.io/apimachinery/pkg/util/wait.BackoffUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:156
+k8s.io/apimachinery/pkg/util/wait.JitterUntil
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:133
+k8s.io/apimachinery/pkg/util/wait.JitterUntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:185
+k8s.io/apimachinery/pkg/util/wait.UntilWithContext
+	/home/brgverst/go/pkg/mod/k8s.io/apimachinery@v0.20.5/pkg/util/wait/wait.go:99
+2021-12-05T14:49:56.293-0700	INFO	plumber.Updater	new revision number: 3	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:56.293-0700	INFO	plumber.Updater	active revision set	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:56.293-0700	INFO	plumber.Updater	next revision set	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:56.310-0700	INFO	plumber.Updater	####upgrade-bench,markedActive,2,1638740996310290569,	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:56.463-0700	INFO	plumber.GarbageCollector	####upgrade-bench,phaseOutCompleted,1,1638740996463862249,	{"Topology": "default/upgrade-bench"}
+2021-12-05T14:49:56.480-0700	INFO	plumber.Syncer	####upgrade-bench,activeObjectsCreated,2,1638740996480834472,
+2021-12-05T14:50:51.938-0700	INFO	controller-runtime.manager.controller.topology	Stopping workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology"}
+2021-12-05T14:50:51.938-0700	INFO	controller-runtime.manager.controller.topologypart	Stopping workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyPart"}
+2021-12-05T14:50:51.938-0700	INFO	controller-runtime.manager.controller.topologyrevision	Stopping workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "TopologyRevision"}
+2021-12-05T14:50:51.938-0700	INFO	controller-runtime.manager.controller.topology	Stopping workers	{"reconciler group": "plumber.ugent.be", "reconciler kind": "Topology"}

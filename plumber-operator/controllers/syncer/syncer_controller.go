@@ -107,8 +107,8 @@ func (s *Syncer) SetupWithManager(mgr ctrl.Manager) error {
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=plumber.ugent.be,resources=topology/finalizers,verbs=update
 func (s *Syncer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	defer shared.Elapsed(s.Log, "Syncing")()
-	s.Log.Info("starting syncer")
+	//defer shared.Elapsed(s.Log, "Syncing")()
+	//s.Log.Info("starting syncer")
 	// 1. get revision object that triggered the reconcile:
 	var topoRev plumberv1alpha1.TopologyRevision
 	if err := s.Get(ctx, req.NamespacedName, &topoRev); err != nil {
